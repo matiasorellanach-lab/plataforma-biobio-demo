@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Regional Interactivo · Plataforma Biobío</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --an:#0E2A4A; --an2:#1A5080; --az:#2A8DC8; --oro:#C9973B;
+  --bg:#F2F6FA; --ca:#fff; --bo:#DDE4EE; --tx:#1A2332; --mu:#6B7280;
+  --tur:#3B6D11; --log:#534AB7; --ene:#0F766E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;height:100vh;background:var(--bg)}
+button{font-family:inherit;cursor:pointer}
+
+/* ═══ HEADER ═══ */
+header{background:var(--an);padding:9px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-shrink:0;z-index:1100}
+.hl{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{background:var(--az);color:#fff;font-size:10px;font-weight:800;padding:4px 10px;border-radius:4px;letter-spacing:1.5px;flex-shrink:0}
+.htit{color:#fff;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hsub{color:rgba(255,255,255,.5);font-size:10.5px;margin-top:1px}
+.hstats{display:flex;gap:16px;flex-shrink:0}
+.hst{text-align:right}
+.hst b{display:block;color:#fff;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.hst span{color:rgba(255,255,255,.45);font-size:9px;text-transform:uppercase;letter-spacing:.8px}
+@media(max-width:840px){.hstats{display:none}}
+
+/* ═══ MODOS ═══ */
+.modos{background:var(--ca);border-bottom:1px solid var(--bo);display:flex;flex-shrink:0;z-index:1050;position:relative}
+.modo{flex:1;background:none;border:none;padding:9px 8px 11px;text-align:center;position:relative;transition:background .2s;border-right:1px solid var(--bo)}
+.modo:last-child{border-right:none}
+.modo:hover{background:var(--bg)}
+.modo .mi{font-size:16px;display:block;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.modo:hover .mi{transform:translateY(-2px) scale(1.12)}
+.modo .mn{font-size:12px;font-weight:700;color:var(--mu);transition:color .2s}
+.modo .md{font-size:9.5px;color:var(--mu);opacity:.75}
+.modo.on .mn{color:var(--tx)}
+.modo.on::after{content:"";position:absolute;left:12%;right:12%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--mc,var(--az));animation:barIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes barIn{from{transform:scaleX(.2);opacity:0}to{transform:scaleX(1);opacity:1}}
+.modo[data-m=comunas]{--mc:#2A8DC8}.modo[data-m=turismo]{--mc:#3B6D11}.modo[data-m=logistica]{--mc:#534AB7}
+
+/* ═══ TOOLBAR ═══ */
+.tbar{background:var(--ca);border-bottom:1px solid var(--bo);padding:7px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;z-index:1000}
+.sb{position:relative;min-width:160px;flex:1;max-width:230px}
+.sb svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none}
+#si{width:100%;padding:6px 8px 6px 28px;font-size:12px;border:1px solid var(--bo);border-radius:6px;background:var(--bg);color:var(--tx);outline:none;font-family:inherit;transition:border-color .2s,box-shadow .2s}
+#si:focus{border-color:var(--az);box-shadow:0 0 0 3px rgba(42,141,200,.15)}
+.sep{width:1px;height:22px;background:var(--bo);flex-shrink:0}
+.fils{display:flex;gap:4px;flex-wrap:wrap}
+.fb{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--bo);background:var(--bg);color:var(--mu);font-family:inherit;transition:all .18s;white-space:nowrap}
+.fb:hover{border-color:#999;color:var(--tx);transform:translateY(-1px)}
+.fb.on{color:#fff!important;border-color:transparent!important;background:var(--fc,var(--az))}
+.pbg{display:flex;gap:4px;margin-left:auto}
+.pb{font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--bo);background:var(--bg);color:var(--mu);font-family:inherit;transition:all .15s;white-space:nowrap}
+.pb.on{background:var(--an);color:#fff;border-color:var(--an)}
+.icb{width:30px;height:28px;border:1px solid var(--bo);border-radius:6px;background:var(--bg);color:var(--mu);font-size:13px;line-height:1;transition:all .15s;flex-shrink:0}
+.icb:hover{color:var(--tx);border-color:#999}
+.icb.on{background:var(--an);color:#fff;border-color:var(--an)}
+
+/* ═══ LAYOUT ═══ */
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+#map{flex:1;z-index:1;background:#BFD6E4}
+.pan{width:322px;flex-shrink:0;background:var(--ca);border-left:1px solid var(--bo);display:flex;flex-direction:column;min-height:0}
+.ph{padding:12px 14px 8px;border-bottom:1px solid var(--bo);flex-shrink:0}
+.ph h3{font-size:13px;color:var(--an);display:flex;align-items:center;gap:7px}
+.bdg{background:var(--az);color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:10px}
+.ph p{font-size:11px;color:var(--mu);margin-top:3px;line-height:1.45}
+.pb2{flex:1;overflow-y:auto;padding:10px;min-height:0}
+@media(max-width:760px){
+  .main{flex-direction:column}
+  #map{flex:none;height:52vh}
+  .pan{width:100%;flex:1;border-left:none;border-top:1px solid var(--bo)}
+}
+
+/* ═══ LISTA COMUNAS ═══ */
+.cls{display:flex;flex-direction:column;gap:2px}
+.ci{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:background .12s,transform .12s;animation:itemIn .35s both}
+.ci:hover{background:var(--bg);border-color:var(--bo);transform:translateX(2px)}
+.ci.sel{background:#EEF4FB;border-color:var(--az)}
+@keyframes itemIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.6)}
+.cin{flex:1;min-width:0}
+.cna{font-size:12px;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cpr{font-size:10px;color:var(--mu)}
+.ctg{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--bg);border:1px solid var(--bo);color:var(--mu);white-space:nowrap}
+.nor{text-align:center;padding:20px;color:var(--mu);font-size:12px}
+
+/* ═══ FICHA ═══ */
+.fic{display:none}
+.fic.vis{display:block;animation:ficIn .3s cubic-bezier(.22,1,.36,1)}
+@keyframes ficIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.bbk{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--az);background:none;border:none;padding:0;margin-bottom:10px}
+.bbk:hover{opacity:.7}
+.fh{border-radius:9px;padding:12px;margin-bottom:10px;color:#fff;background:linear-gradient(135deg,var(--an),var(--an2))}
+.fn{font-size:15px;font-weight:700;margin-bottom:1px}
+.fj{font-size:10px;opacity:.85;margin-bottom:6px}
+.fca{display:flex;flex-wrap:wrap;gap:3px}
+.fc{font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
+.fweb{display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(120deg,#0E2A4A,#1A5080);color:#fff;border-radius:8px;padding:9px 13px;margin-bottom:11px;text-decoration:none;transition:transform .18s,box-shadow .18s;box-shadow:0 2px 8px rgba(14,42,74,.22)}
+.fweb:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(14,42,74,.32)}
+.fweb>span:first-child{font-size:12px;font-weight:700;white-space:nowrap}
+.fweb-host{font-size:10px;color:rgba(255,255,255,.7);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs{margin-bottom:10px}
+.fst{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid var(--bo)}
+.fs p{font-size:12px;color:var(--tx);line-height:1.6}
+.kg{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
+.kc{background:var(--bg);border:1px solid var(--bo);border-radius:6px;padding:6px 8px;animation:itemIn .4s both}
+.kv{font-size:13px;font-weight:700;color:var(--az)}
+.kl{font-size:10px;color:var(--mu);line-height:1.3}
+.tr{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.tp{font-size:10px;padding:2px 7px;border-radius:8px;border:1px solid}
+.tt{background:#EAF3DE;border-color:#C0DD97;color:#3B6D11}
+.ti{background:#FAEEDA;border-color:#FAC775;color:#854F0B}
+.tpe{background:#E1F5EE;border-color:#9FE1CB;color:#0F6E56}
+.tl{background:#EEEDFE;border-color:#CECBF6;color:#534AB7}
+.tf{background:#F1EFE8;border-color:#D3D1C7;color:#5F5E5A}
+.atrL{list-style:none;display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.atrL li{display:flex;gap:8px;font-size:12px;line-height:1.45;align-items:flex-start;animation:itemIn .35s both}
+.atrL .aic{flex:0 0 18px;text-align:center}
+.rchip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;border:1.5px solid;background:#fff;margin:2px 3px 0 0;cursor:pointer;transition:transform .15s}
+.rchip:hover{transform:translateY(-1px)}
+.rchip i{width:12px;height:0;border-top:3px dotted currentColor}
+
+/* ═══ PANEL TURISMO / LOGÍSTICA ═══ */
+.subpanel{display:none}
+.subpanel.vis{display:block;animation:ficIn .3s cubic-bezier(.22,1,.36,1)}
+.log-intro{font-size:11.5px;color:var(--mu);line-height:1.55;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--bo)}
+.log-cat{margin-bottom:14px}
+.log-cat-h{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--an);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.log-cat-bar{width:18px;height:3px;border-radius:2px;flex-shrink:0}
+.log-item{display:flex;gap:9px;padding:7px 8px;border-radius:7px;cursor:pointer;transition:background .12s,transform .12s;border:1px solid transparent;animation:itemIn .35s both}
+.log-item:hover{background:var(--bg);border-color:var(--bo);transform:translateX(2px)}
+.log-line{width:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding-top:3px}
+.log-line i{display:block;width:14px;height:4px;border-radius:2px}
+.log-ico{font-size:14px;flex-shrink:0;width:16px;text-align:center;line-height:1.3}
+.log-tx{flex:1;min-width:0}
+.log-nm{font-size:12px;font-weight:600;color:var(--tx);line-height:1.25}
+.log-ds{font-size:10.5px;color:var(--mu);line-height:1.4;margin-top:1px}
+.log-badge{display:inline-block;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:1px 6px;border-radius:8px;margin-top:3px}
+.log-badge.fut{background:#FDEBD0;color:#A35A00}
+.log-badge.obra{background:#FCE4E4;color:#B23838}
+.log-badge.ok{background:#E1F0DA;color:#3B6D11}
+
+/* ═══ TOOLTIPS Y MARCADORES ═══ */
+.ruta-tip,.leaflet-tooltip.infra-tip{background:rgba(14,42,74,.95);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:6px;font-size:11px;font-weight:600;padding:4px 10px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.ruta-tip::before,.leaflet-tooltip.infra-tip::before{display:none}
+.tip-sub{display:block;font-weight:400;font-size:10px;opacity:.78;max-width:210px;white-space:normal}
+.leaflet-tooltip.com-tip{background:rgba(255,255,255,.96);color:var(--an);border:1px solid var(--bo);border-radius:6px;font-size:11.5px;font-weight:700;padding:3px 9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.leaflet-tooltip.com-tip::before{display:none}
+.infra-marker,.log-mk,.tur-mk,.label-comuna{background:transparent;border:none;box-shadow:none}
+.infra-ic{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#0E2A4A;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);font-size:13px;line-height:1;transition:transform .2s}
+.infra-ic:hover{transform:scale(1.18)}
+.infra-ic.aero{background:#534AB7}.infra-ic.planta{background:#2D6A4F}.infra-ic.hidro{background:#1A6B96}.infra-ic.solar{background:#D97706}.infra-ic.eolico{background:#0F766E}
+.log-mk-ic{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:#7C3AED;border:2px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.5);font-size:13px;line-height:1}
+.log-mk-ic.paso{background:#B23838;border-radius:50%;position:relative}
+.log-mk-ic.paso::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid #B23838;animation:pulso 2s ease-out infinite}
+.tur-ic{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 7px rgba(0,0,0,.45);font-size:12px;line-height:1;transition:transform .2s}
+.tur-ic:hover{transform:scale(1.2)}
+.tur-ic.museo{background:#5B4E8C}.tur-ic.parque{background:#2F6B3C}.tur-ic.playa{background:#C77F2E}.tur-ic.natural{background:#1B90B8}
+@keyframes pulso{0%{transform:scale(.7);opacity:.9}70%{transform:scale(1.6);opacity:0}100%{opacity:0}}
+.label-comuna span{display:block;font-family:'Segoe UI',system-ui,sans-serif;font-weight:600;color:#fff;text-shadow:-1px -1px 0 rgba(10,25,45,.85),1px -1px 0 rgba(10,25,45,.85),-1px 1px 0 rgba(10,25,45,.85),1px 1px 0 rgba(10,25,45,.85),0 2px 5px rgba(0,0,0,.7);line-height:1.2;text-align:center;white-space:nowrap;letter-spacing:.2px}
+.label-comuna.oscuro span{color:#123;text-shadow:-1px -1px 0 rgba(255,255,255,.9),1px -1px 0 rgba(255,255,255,.9),-1px 1px 0 rgba(255,255,255,.9),1px 1px 0 rgba(255,255,255,.9)}
+
+/* ═══ ANIMACIÓN DE RUTAS ═══ */
+.flujo-log{stroke-dasharray:14 10;animation:fluir 1.4s linear infinite}
+.flujo-tur{stroke-dasharray:1 11;stroke-linecap:round;animation:fluir 1.8s linear infinite}
+@keyframes fluir{to{stroke-dashoffset:-24}}
+path.leaflet-interactive{transition:fill-opacity .45s,stroke-opacity .45s,fill .45s}
+
+/* ═══ LEYENDA ═══ */
+.leg{position:absolute;bottom:24px;right:8px;background:rgba(255,255,255,.97);border:1px solid var(--bo);border-radius:8px;z-index:500;font-size:11px;max-width:200px;box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.leg summary{padding:7px 11px;font-weight:700;color:var(--an);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+.leg summary::after{content:"▾";margin-left:auto;transition:transform .2s}
+.leg[open] summary::after{transform:rotate(180deg)}
+.leg .lc{padding:0 11px 9px}
+.lt{font-weight:600;color:var(--tx);margin:6px 0 4px;font-size:10.5px}
+.lr{display:flex;align-items:center;gap:6px;margin-bottom:3px;color:var(--mu);font-size:10.5px}
+.ld{width:12px;height:10px;border-radius:2px;flex-shrink:0}
+.lnote{font-size:9px;color:var(--mu);border-top:1px solid var(--bo);margin-top:7px;padding-top:5px;line-height:1.4}
+
+/* ═══ TOAST / HINT ═══ */
+.hint{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(14,42,74,.95);color:#fff;border-radius:24px;padding:9px 18px;font-size:12px;z-index:900;display:flex;gap:14px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);animation:hintIn .5s .8s both;max-width:92%;text-align:center}
+@keyframes hintIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+.hint.bye{animation:hintOut .4s both}
+@keyframes hintOut{to{opacity:0;transform:translate(-50%,14px)}}
+.hint b{color:var(--oro)}
+.hint button{background:none;border:none;color:rgba(255,255,255,.6);font-size:14px;line-height:1}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hl">
+    <div class="logo">BIOBÍO</div>
+    <div style="min-width:0">
+      <div class="htit">Mapa Regional Interactivo</div>
+      <div class="hsub">Plataforma Biobío · Corporación Desarrolla Biobío · 2026</div>
+    </div>
+  </div>
+  <div class="hstats">
+    <div class="hst"><b data-n="33">0</b><span>Comunas</span></div>
+    <div class="hst"><b data-n="9">0</b><span>Ejes logísticos</span></div>
+    <div class="hst"><b data-n="19">0</b><span>Infraestructuras</span></div>
+    <div class="hst"><b data-n="16">0</b><span>Hitos turísticos</span></div>
+  </div>
+</header>
+
+<nav class="modos" aria-label="Modos del mapa">
+  <button class="modo on" data-m="comunas"><span class="mi">🗺️</span><span class="mn">Perfil Comunal</span><br><span class="md">Inversión y economía por comuna</span></button>
+  <button class="modo" data-m="turismo"><span class="mi">🏖️</span><span class="mn">Turismo y Patrimonio</span><br><span class="md">Atractivos, rutas, museos y parques</span></button>
+  <button class="modo" data-m="logistica"><span class="mi">🚚</span><span class="mn">Logística y Energía</span><br><span class="md">Carga, puentes, paso fronterizo, energía</span></button>
+</nav>
+
+<div class="tbar">
+  <div class="sb">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="si" type="text" placeholder="Buscar comuna…" list="dl" autocomplete="off">
+    <datalist id="dl"></datalist>
+  </div>
+  <div class="sep"></div>
+  <div class="fils" id="fils"></div>
+  <div class="pbg">
+    <button class="pb on" data-p="all">Todas</button>
+    <button class="pb" data-p="Concepción" style="border-left:3px solid #C8880A">Concepción</button>
+    <button class="pb" data-p="Arauco" style="border-left:3px solid #4A8C3F">Arauco</button>
+    <button class="pb" data-p="Bío-Bío" style="border-left:3px solid #C06010">Prov. Biobío</button>
+    <button class="icb" id="btnBase" title="Cambiar fondo satelital / claro">🛰️</button>
+    <button class="icb" id="btnReset" title="Restablecer vista">⟳</button>
+  </div>
+</div>
+
+<div class="main">
+  <div id="map">
+    <details class="leg" id="leg" open><summary>Simbología</summary><div class="lc" id="legC"></div></details>
+    <div class="hint" id="hint"><span>Elige un <b>modo</b> arriba · haz clic en una <b>comuna</b> para su ficha · filtra con los <b>chips</b></span><button onclick="cerrarHint()" aria-label="Cerrar">✕</button></div>
+  </div>
+  <div class="pan">
+    <div class="ph">
+      <h3 id="pTit">Comunas <span class="bdg" id="lb">33</span></h3>
+      <p id="psub">Haz clic en una comuna del mapa o de la lista para abrir su perfil completo.</p>
+    </div>
+    <div class="pb2">
+      <div class="cls" id="cls"></div>
+      <div class="fic" id="fic"></div>
+      <div class="subpanel" id="turpanel"></div>
+      <div class="subpanel" id="logpanel"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═════════ DATOS BASE · Plataforma Biobío ═════════ */
+const GJ={"type":"FeatureCollection","features":[{"type":"Feature","properties":{"objectid":205,"shape_leng":230584.1023,"dis_elec":21,"cir_sena":10,"cod_comuna":8203,"codregion":8,"st_area_sh":1748517610.01,"st_length_":292034.4874,"Region":"Región del Bío-Bío","Comuna":"Cañete","Provincia":"Arauco","desc":"Capital de Arauco. Museo Mapuche Juan Antonio Ríos. Gateway al Lago Lanalhue.","inv":"Turismo cultural mapuche, infraestructura hotelera, gastronomía local.","cat":["turismo","forestal"],"cx":-73.26165,"cy":-37.84187},"geometry":{"type":"Polygon","coordinates":[[[-73.3638,-37.6934],[-73.2447,-37.7468],[-73.1156,-37.7036],[-73.1017,-37.7265],[-73.0405,-37.71],[-73.0156,-37.7473],[-73.0415,-37.7805],[-73.0234,-37.8043],[-73.0767,-37.8624],[-73.1476,-37.8477],[-73.2019,-37.8761],[-73.275,-37.8388],[-73.2585,-37.8591],[-73.323,-37.9131],[-73.297,-37.9403],[-73.3522,-37.9469],[-73.252,-38.0602],[-73.3115,-38.0636],[-73.3184,-38.1145],[-73.4427,-38.1309],[-73.5452,-37.8697],[-73.496,-37.8392],[-73.4324,-37.7126],[-73.3896,-37.6961],[-73.3726,-37.7117],[-73.3638,-37.6934]]]}},{"type":"Feature","properties":{"objectid":206,"shape_leng":196938.931,"dis_elec":21,"cir_sena":10,"cod_comuna":8204,"codregion":8,"st_area_sh":1030270719.81,"st_length_":249973.1143,"Region":"Región del Bío-Bío","Comuna":"Contulmo","Provincia":"Arauco","desc":"Lagos Lanalhue y Lleulleu. Ecoturismo y etnoturismo mapuche lafkenche.","inv":"Turismo de naturaleza, infraestructura lacustre, gastronomía lafkenche.","cat":["turismo","forestal"],"cx":-73.215,"cy":-38.04329},"geometry":{"type":"Polygon","coordinates":[[[-73.2713,-37.8392],[-73.2019,-37.8761],[-73.1476,-37.8477],[-73.0767,-37.8624],[-73.1251,-37.8774],[-73.12,-37.9594],[-73.1863,-37.9882],[-73.2062,-38.0531],[-73.0814,-38.0951],[-73.0727,-38.1238],[-73.0924,-38.1918],[-73.1314,-38.1836],[-73.1383,-38.2156],[-73.2014,-38.2312],[-73.2222,-38.2719],[-73.2771,-38.2973],[-73.2329,-38.2433],[-73.3253,-38.1691],[-73.3275,-38.1169],[-73.3016,-38.1038],[-73.3115,-38.0636],[-73.252,-38.0602],[-73.3523,-37.9464],[-73.297,-37.9403],[-73.323,-37.9131],[-73.2585,-37.8591],[-73.2713,-37.8392]]]}},{"type":"Feature","properties":{"objectid":207,"shape_leng":203354.3265,"dis_elec":21,"cir_sena":10,"cod_comuna":8205,"codregion":8,"st_area_sh":1586385752.62,"st_length_":256146.0277,"Region":"Región del Bío-Bío","Comuna":"Curanilahue","Provincia":"Arauco","desc":"Tradición carbonífera reconvertida en polo forestal y ecoturístico.","inv":"Reconversión productiva, forestal industrializado, turismo patrimonial.","cat":["forestal","turismo"],"cx":-73.30285,"cy":-37.46145},"geometry":{"type":"Polygon","coordinates":[[[-73.3923,-37.3529],[-73.3064,-37.3596],[-73.279,-37.3296],[-73.2247,-37.3571],[-73.1269,-37.3557],[-73.1217,-37.428],[-72.9859,-37.4461],[-73.0808,-37.6768],[-73.1258,-37.6828],[-73.1264,-37.641],[-73.1643,-37.6062],[-73.3117,-37.5946],[-73.3814,-37.5473],[-73.4388,-37.559],[-73.4186,-37.4756],[-73.4888,-37.4525],[-73.4796,-37.4305],[-73.5053,-37.4232],[-73.487,-37.3844],[-73.4266,-37.3675],[-73.3983,-37.3287],[-73.3923,-37.3529]]]}},{"type":"Feature","properties":{"objectid":208,"shape_leng":206188.9944,"dis_elec":21,"cir_sena":10,"cod_comuna":8201,"codregion":8,"st_area_sh":904415407.099,"st_length_":263533.153,"Region":"Región del Bío-Bío","Comuna":"Lebu","Provincia":"Arauco","desc":"Puerto pesquero artesanal. Capital histórica de Arauco.","inv":"Infraestructura caleta, pesca con valor agregado, turismo costero.","cat":["pesca","logistica"],"cx":-73.54776,"cy":-37.59496},"geometry":{"type":"MultiPolygon","coordinates":[[[[-73.9507,-38.3161],[-73.8657,-38.3689],[-73.886,-38.4184],[-73.9399,-38.4179],[-73.9507,-38.3161]]],[[[-73.6575,-37.7261],[-73.6801,-37.6265],[-73.6453,-37.5565],[-73.5979,-37.5282],[-73.5972,-37.4395],[-73.5411,-37.4504],[-73.5152,-37.4232],[-73.4834,-37.429],[-73.4888,-37.4525],[-73.4186,-37.4758],[-73.476,-37.5991],[-73.5022,-37.5913],[-73.506,-37.6154],[-73.5298,-37.5864],[-73.5409,-37.585],[-73.4933,-37.649],[-73.5193,-37.6672],[-73.5125,-37.7437],[-73.5575,-37.8074],[-73.5829,-37.8159],[-73.6575,-37.7261]]]]}},{"type":"Feature","properties":{"objectid":209,"shape_leng":191513.6581,"dis_elec":21,"cir_sena":10,"cod_comuna":8206,"codregion":8,"st_area_sh":960669188.152,"st_length_":241877.7246,"Region":"Región del Bío-Bío","Comuna":"Los Alamos","Provincia":"Arauco","desc":"Zona forestal productiva con plantaciones de pino y eucalipto.","inv":"Industrialización madera, logística forestal, bioenergía.","cat":["forestal"],"cx":-73.40577,"cy":-37.66823},"geometry":{"type":"Polygon","coordinates":[[[-73.4226,-37.5447],[-73.3117,-37.5946],[-73.1643,-37.6062],[-73.1264,-37.641],[-73.114,-37.7035],[-73.2148,-37.7224],[-73.2311,-37.7468],[-73.3525,-37.6943],[-73.4248,-37.7075],[-73.496,-37.8392],[-73.5452,-37.8697],[-73.5816,-37.8162],[-73.5125,-37.7437],[-73.5193,-37.6672],[-73.5043,-37.66],[-73.4933,-37.649],[-73.5409,-37.585],[-73.5054,-37.6153],[-73.5022,-37.5913],[-73.4781,-37.6006],[-73.4633,-37.5582],[-73.4226,-37.5447]]]}},{"type":"Feature","properties":{"objectid":214,"shape_leng":78536.5989,"dis_elec":21,"cir_sena":10,"cod_comuna":8304,"codregion":8,"st_area_sh":546254659.177,"st_length_":98730.7405,"Region":"Región del Bío-Bío","Comuna":"Laja","Provincia":"Bío-Bío","desc":"Planta papelera CMPC. Salto del Laja, atractivo turístico nacional.","inv":"Industria forestal 2ª transformación, turismo Salto del Laja, energía.","cat":["industria","forestal"],"cx":-72.56506,"cy":-37.30958},"geometry":{"type":"Polygon","coordinates":[[[-72.5997,-37.229],[-72.5163,-37.2417],[-72.438,-37.3254],[-72.4324,-37.3531],[-72.4819,-37.392],[-72.5788,-37.3937],[-72.7064,-37.3489],[-72.7323,-37.2734],[-72.5997,-37.229]]]}},{"type":"Feature","properties":{"objectid":215,"shape_leng":257441.7239,"dis_elec":21,"cir_sena":10,"cod_comuna":8301,"codregion":8,"st_area_sh":2778401837.93,"st_length_":324131.1331,"Region":"Región del Bío-Bío","Comuna":"Los Angeles","Provincia":"Bío-Bío","desc":"Capital de la provincia de Biobío. Hub agroindustrial y forestal con aeródromo.","inv":"Agroindustria, procesamiento forestal, logística multimodal, vivienda.","cat":["industria","forestal"],"cx":-72.27768,"cy":-37.41549},"geometry":{"type":"Polygon","coordinates":[[[-72.1182,-37.1789],[-72.0399,-37.2051],[-72.0671,-37.2301],[-72.0857,-37.2206],[-72.1366,-37.316],[-72.0967,-37.3208],[-72.0678,-37.4001],[-72.1057,-37.4465],[-72.0422,-37.4472],[-72.1766,-37.5423],[-72.1235,-37.5653],[-72.1574,-37.586],[-72.1753,-37.663],[-72.2317,-37.6106],[-72.2647,-37.6165],[-72.3495,-37.5689],[-72.4411,-37.5568],[-72.5743,-37.5799],[-72.5998,-37.5048],[-72.6817,-37.4757],[-72.6714,-37.3727],[-72.4819,-37.392],[-72.4324,-37.3531],[-72.5088,-37.2514],[-72.4715,-37.2195],[-72.1182,-37.1789]]]}},{"type":"Feature","properties":{"objectid":216,"shape_leng":311947.9083,"dis_elec":21,"cir_sena":10,"cod_comuna":8305,"codregion":8,"st_area_sh":3084621693.08,"st_length_":395257.6418,"Region":"Región del Bío-Bío","Comuna":"Mulchén","Provincia":"Bío-Bío","desc":"Corredor forestal y termas precordilleranas. Pesca deportiva en el Biobío.","inv":"Turismo termal, pesca deportiva, manejo forestal sustentable.","cat":["forestal","turismo"],"cx":-71.95656,"cy":-37.9268},"geometry":{"type":"Polygon","coordinates":[[[-72.4333,-37.5619],[-72.2317,-37.6106],[-72.1867,-37.6622],[-71.9934,-37.7325],[-71.9695,-37.8089],[-71.9172,-37.8444],[-71.7802,-37.8947],[-71.7597,-37.9286],[-71.692,-37.9311],[-71.6415,-37.9598],[-71.6497,-38.0426],[-71.6224,-38.0538],[-71.636,-38.0934],[-71.6127,-38.1073],[-71.6408,-38.1373],[-71.6665,-38.1315],[-71.6862,-38.1822],[-71.7066,-38.1885],[-71.6939,-38.1691],[-71.7214,-38.1462],[-71.7005,-38.0697],[-71.7379,-38.0413],[-71.7765,-38.0303],[-71.8887,-38.0755],[-71.9656,-37.9942],[-72.0491,-38.0141],[-72.102,-37.9987],[-72.1291,-37.953],[-72.2452,-37.8784],[-72.3177,-37.8815],[-72.4005,-37.8423],[-72.4794,-37.7479],[-72.4817,-37.5847],[-72.531,-37.578],[-72.4333,-37.5619]]]}},{"type":"Feature","properties":{"objectid":217,"shape_leng":191416.3447,"dis_elec":21,"cir_sena":10,"cod_comuna":8306,"codregion":8,"st_area_sh":1447681834.79,"st_length_":241228.0222,"Region":"Región del Bío-Bío","Comuna":"Nacimiento","Provincia":"Bío-Bío","desc":"Zona forestal e industrial en corredor del río Biobío.","inv":"Industrialización madera, logística fluvial, energía biomásica.","cat":["forestal","industria"],"cx":-72.7982,"cy":-37.45981},"geometry":{"type":"Polygon","coordinates":[[[-72.7201,-37.3025],[-72.6666,-37.3835],[-72.6817,-37.4757],[-72.595,-37.5107],[-72.6528,-37.5344],[-72.6331,-37.6008],[-72.655,-37.6254],[-72.7272,-37.626],[-72.776,-37.5817],[-72.9274,-37.6197],[-73.0674,-37.624],[-73.0132,-37.5578],[-73.0235,-37.4989],[-72.9692,-37.4479],[-72.9432,-37.3702],[-72.8971,-37.344],[-72.8113,-37.3443],[-72.8034,-37.3073],[-72.7499,-37.3229],[-72.729,-37.2758],[-72.7201,-37.3025]]]}},{"type":"Feature","properties":{"objectid":218,"shape_leng":77213.5482,"dis_elec":21,"cir_sena":10,"cod_comuna":8307,"codregion":8,"st_area_sh":248070130.186,"st_length_":97486.005,"Region":"Región del Bío-Bío","Comuna":"Negrete","Provincia":"Bío-Bío","desc":"Zona agrícola y forestal en ribera del río Biobío.","inv":"Agroindustria cereal, ganadería, procesamiento madera.","cat":["forestal"],"cx":-72.5847,"cy":-37.58467},"geometry":{"type":"Polygon","coordinates":[[[-72.5955,-37.531],[-72.5743,-37.5799],[-72.4839,-37.5804],[-72.4916,-37.6553],[-72.6509,-37.6646],[-72.6331,-37.6008],[-72.6528,-37.5344],[-72.5955,-37.531]]]}},{"type":"Feature","properties":{"objectid":219,"shape_leng":282388.7667,"dis_elec":21,"cir_sena":10,"cod_comuna":8308,"codregion":8,"st_area_sh":1813717404.16,"st_length_":358287.7321,"Region":"Región del Bío-Bío","Comuna":"Quilaco","Provincia":"Bío-Bío","desc":"Ecoturismo andino. Ríos de alta calidad para pesca deportiva de trucha.","inv":"Ecoturismo andino, pesca deportiva, corredores biológicos.","cat":["turismo","forestal"],"cx":-71.70923,"cy":-37.97296},"geometry":{"type":"Polygon","coordinates":[[[-72.076,-37.653],[-71.894,-37.7157],[-71.8246,-37.7088],[-71.7762,-37.763],[-71.7081,-37.7746],[-71.6744,-37.8118],[-71.6747,-37.8676],[-71.6039,-37.9282],[-71.5682,-37.9316],[-71.5519,-37.984],[-71.4854,-38.0025],[-71.4787,-38.0437],[-71.4283,-38.0711],[-71.4101,-38.1236],[-71.4345,-38.1754],[-71.5318,-38.204],[-71.5536,-38.2461],[-71.6086,-38.2408],[-71.6435,-38.314],[-71.7093,-38.2659],[-71.6879,-38.2456],[-71.7155,-38.21],[-71.6665,-38.1315],[-71.6408,-38.1373],[-71.6127,-38.1073],[-71.636,-38.0934],[-71.6224,-38.0538],[-71.6497,-38.0426],[-71.6407,-37.9607],[-71.692,-37.9311],[-71.7597,-37.9286],[-71.7802,-37.8947],[-71.9172,-37.8444],[-71.9695,-37.8089],[-71.9924,-37.7333],[-72.0986,-37.7071],[-72.1571,-37.6639],[-72.076,-37.653]]]}},{"type":"Feature","properties":{"objectid":220,"shape_leng":240420.5594,"dis_elec":21,"cir_sena":10,"cod_comuna":8309,"codregion":8,"st_area_sh":1781342467.48,"st_length_":302872.9491,"Region":"Región del Bío-Bío","Comuna":"Quilleco","Provincia":"Bío-Bío","desc":"Zona forestal y lechera de la depresión intermedia.","inv":"Industria láctea, forestal industrializado, logística rural.","cat":["forestal"],"cx":-71.90351,"cy":-37.42145},"geometry":{"type":"Polygon","coordinates":[[[-72.0304,-37.229],[-71.9222,-37.3503],[-71.7913,-37.3438],[-71.6417,-37.4034],[-71.5762,-37.4665],[-71.4639,-37.4665],[-71.4626,-37.5587],[-71.5006,-37.5711],[-71.55,-37.5411],[-71.6767,-37.5455],[-71.7918,-37.5034],[-71.8566,-37.5125],[-71.898,-37.5497],[-71.9721,-37.5315],[-72.1574,-37.586],[-72.1236,-37.5647],[-72.1766,-37.5423],[-72.0422,-37.4472],[-72.1057,-37.4465],[-72.0678,-37.4001],[-72.0967,-37.3208],[-72.1366,-37.316],[-72.131,-37.2977],[-72.0857,-37.2206],[-72.0671,-37.2301],[-72.0399,-37.2051],[-72.0304,-37.229]]]}},{"type":"Feature","properties":{"objectid":221,"shape_leng":57593.2998,"dis_elec":21,"cir_sena":10,"cod_comuna":8310,"codregion":8,"st_area_sh":147236646.145,"st_length_":72301.0876,"Region":"Región del Bío-Bío","Comuna":"San Rosendo","Provincia":"Bío-Bío","desc":"Nudo ferroviario histórico. Conectividad logística interregional.","inv":"Logística ferroviaria multimodal, nodo intermodal de carga.","cat":["logistica","forestal"],"cx":-72.74725,"cy":-37.20306},"geometry":{"type":"Polygon","coordinates":[[[-72.7937,-37.1666],[-72.7517,-37.1952],[-72.6725,-37.1727],[-72.6419,-37.2376],[-72.7323,-37.2734],[-72.7685,-37.2125],[-72.8237,-37.1999],[-72.7937,-37.1666]]]}},{"type":"Feature","properties":{"objectid":223,"shape_leng":174044.2755,"dis_elec":21,"cir_sena":10,"cod_comuna":8312,"codregion":8,"st_area_sh":1437440733.53,"st_length_":218623.2384,"Region":"Región del Bío-Bío","Comuna":"Tucapel","Provincia":"Bío-Bío","desc":"Recursos hídricos y forestales en el alto Biobío precordillerano.","inv":"Manejo hídrico, energía hidráulica menor, forestal sustentable.","cat":["forestal","turismo"],"cx":-71.75096,"cy":-37.17763},"geometry":{"type":"Polygon","coordinates":[[[-71.5303,-37.0679],[-71.4844,-37.1154],[-71.5137,-37.1484],[-71.5288,-37.3142],[-71.6719,-37.3102],[-71.9143,-37.3511],[-72.062,-37.1935],[-72.0662,-37.1678],[-72.0357,-37.1656],[-71.9905,-37.1932],[-71.8898,-37.1825],[-71.797,-37.1086],[-71.687,-37.1443],[-71.5625,-37.1338],[-71.5303,-37.0679]]]}},{"type":"Feature","properties":{"objectid":225,"shape_leng":52415.3413,"dis_elec":20,"cir_sena":10,"cod_comuna":8103,"codregion":8,"st_area_sh":117422449.332,"st_length_":65567.4409,"Region":"Región del Bío-Bío","Comuna":"Chiguayante","Provincia":"Concepción","desc":"Zona residencial e industrial del Gran Concepción.","inv":"Vivienda, industria liviana, servicios logísticos.","cat":["industria"],"cx":-73.00172,"cy":-36.89267},"geometry":{"type":"Polygon","coordinates":[[[-73.0403,-36.8528],[-72.9889,-36.876],[-72.946,-36.8666],[-72.9466,-36.9142],[-72.9755,-36.937],[-72.995,-36.9154],[-73.0194,-36.9662],[-73.0635,-36.853],[-73.0403,-36.8528]]]}},{"type":"Feature","properties":{"objectid":226,"shape_leng":87754.4192,"dis_elec":20,"cir_sena":10,"cod_comuna":8101,"codregion":8,"st_area_sh":342717888.08,"st_length_":109049.3711,"Region":"Región del Bío-Bío","Comuna":"Concepción","Provincia":"Concepción","desc":"Capital regional. Segundo polo universitario e industrial de Chile. Hub de servicios y manufactura.","inv":"Manufactura avanzada, data centers, servicios financieros, vivienda industrializada.","cat":["industria","logistica"],"cx":-72.94365,"cy":-36.84201},"geometry":{"type":"Polygon","coordinates":[[[-72.9394,-36.7674],[-72.9071,-36.7979],[-72.8468,-36.7927],[-72.8697,-36.8622],[-72.8511,-36.9179],[-72.8862,-36.9272],[-72.9275,-36.8909],[-72.9431,-36.9038],[-72.9463,-36.8664],[-73.0635,-36.853],[-73.0905,-36.8216],[-73.0568,-36.7777],[-72.9394,-36.7674]]]}},{"type":"Feature","properties":{"objectid":227,"shape_leng":127818.3155,"dis_elec":20,"cir_sena":10,"cod_comuna":8102,"codregion":8,"st_area_sh":435614511.516,"st_length_":162750.4207,"Region":"Región del Bío-Bío","Comuna":"Coronel","Provincia":"Concepción","desc":"Puerto granelero reconvertido. Terminal IGEMAR, industria pesquera y zona industrial.","inv":"Reconversión portuaria, energía renovable, logística granelera.","cat":["logistica","industria","pesca"],"cx":-73.07922,"cy":-37.01366},"geometry":{"type":"MultiPolygon","coordinates":[[[[-73.5232,-36.9721],[-73.5212,-37.0068],[-73.454,-37.0515],[-73.5089,-37.0429],[-73.5202,-37.0781],[-73.556,-37.0256],[-73.5232,-36.9721]]],[[[-73.1457,-37.0408],[-73.1882,-36.9995],[-73.1533,-36.9048],[-73.0865,-36.9241],[-73.066,-36.975],[-73.0322,-36.953],[-72.9555,-36.9731],[-72.9771,-37.0691],[-73.0216,-37.0717],[-73.0387,-37.103],[-73.0796,-37.0488],[-73.1398,-37.0739],[-73.1457,-37.0408]]]]}},{"type":"Feature","properties":{"objectid":228,"shape_leng":143484.4866,"dis_elec":20,"cir_sena":10,"cod_comuna":8104,"codregion":8,"st_area_sh":947760299.791,"st_length_":179261.2551,"Region":"Región del Bío-Bío","Comuna":"Florida","Provincia":"Concepción","desc":"Territorio forestal y agropecuario precordillerano.","inv":"Industrialización maderera, silvicultura, ecoturismo.","cat":["forestal"],"cx":-72.70588,"cy":-36.81477},"geometry":{"type":"Polygon","coordinates":[[[-72.6965,-36.6528],[-72.6171,-36.6911],[-72.5854,-36.7483],[-72.593,-36.8161],[-72.5384,-36.8495],[-72.5731,-36.8656],[-72.5708,-36.8937],[-72.6451,-36.8834],[-72.6474,-36.9523],[-72.683,-36.937],[-72.7623,-36.9596],[-72.7914,-36.9399],[-72.8206,-36.9613],[-72.8696,-36.8628],[-72.8447,-36.8381],[-72.8698,-36.771],[-72.8572,-36.746],[-72.7371,-36.7287],[-72.705,-36.7048],[-72.7195,-36.6553],[-72.6965,-36.6528]]]}},{"type":"Feature","properties":{"objectid":230,"shape_leng":140474.8415,"dis_elec":20,"cir_sena":10,"cod_comuna":8105,"codregion":8,"st_area_sh":848831447.899,"st_length_":175966.3365,"Region":"Región del Bío-Bío","Comuna":"Hualqui","Provincia":"Concepción","desc":"Territorio forestal y rural en la ribera del río Biobío.","inv":"Aserraderos, turismo ribereño, agroindustria.","cat":["forestal"],"cx":-72.86895,"cy":-37.00068},"geometry":{"type":"Polygon","coordinates":[[[-72.9255,-36.8921],[-72.8862,-36.9272],[-72.8398,-36.9154],[-72.8206,-36.9613],[-72.7914,-36.9399],[-72.7373,-36.9588],[-72.775,-37.0012],[-72.7241,-37.0392],[-72.7765,-37.077],[-72.764,-37.1381],[-72.8237,-37.1999],[-72.9282,-37.1689],[-72.9796,-37.1069],[-72.9547,-36.9758],[-73.0194,-36.9662],[-72.995,-36.9154],[-72.9746,-36.9369],[-72.9255,-36.8921]]]}},{"type":"Feature","properties":{"objectid":231,"shape_leng":65075.9953,"dis_elec":21,"cir_sena":10,"cod_comuna":8106,"codregion":8,"st_area_sh":180224530.416,"st_length_":83449.8611,"Region":"Región del Bío-Bío","Comuna":"Lota","Provincia":"Concepción","desc":"Patrimonio minero único en Chile. Parque Isidora Cousiño y mina museo.","inv":"Turismo patrimonial industrial, reconversión económica, pesca artesanal.","cat":["turismo","pesca"],"cx":-73.12954,"cy":-37.1167},"geometry":{"type":"MultiPolygon","coordinates":[[[[-73.1641,-37.1072],[-73.1642,-37.1077],[-73.1651,-37.1072],[-73.1647,-37.107],[-73.1641,-37.1072]]],[[[-73.1552,-37.073],[-73.0756,-37.0512],[-73.0422,-37.101],[-73.0666,-37.1974],[-73.1159,-37.1536],[-73.1725,-37.16],[-73.1854,-37.1523],[-73.1526,-37.1168],[-73.1742,-37.0887],[-73.1552,-37.073]]]]}},{"type":"Feature","properties":{"objectid":233,"shape_leng":54738.4624,"dis_elec":20,"cir_sena":10,"cod_comuna":8108,"codregion":8,"st_area_sh":174630114.085,"st_length_":66178.1017,"Region":"Región del Bío-Bío","Comuna":"San Pedro de la Paz","Provincia":"Concepción","desc":"Ciudad lacustre del Gran Concepción con desarrollo inmobiliario y zona industrial sur.","inv":"Desarrollo inmobiliario, comercio, logística sur.","cat":["industria"],"cx":-73.10454,"cy":-36.89041},"geometry":{"type":"Polygon","coordinates":[[[-73.1633,-36.8179],[-73.0683,-36.8405],[-73.0322,-36.953],[-73.0649,-36.9747],[-73.0865,-36.9241],[-73.1533,-36.9048],[-73.1633,-36.8179]]]}},{"type":"Feature","properties":{"objectid":234,"shape_leng":172500.9997,"dis_elec":20,"cir_sena":10,"cod_comuna":8109,"codregion":8,"st_area_sh":1227112564.95,"st_length_":216777.8235,"Region":"Región del Bío-Bío","Comuna":"Santa Juana","Provincia":"Concepción","desc":"Turismo rural y corredores forestales. Rafting en el río Biobío.","inv":"Infraestructura ecoturismo, turismo de aventura, manejo forestal.","cat":["forestal","turismo"],"cx":-72.94814,"cy":-37.25479},"geometry":{"type":"Polygon","coordinates":[[[-72.993,-37.0683],[-72.9602,-37.1458],[-72.8542,-37.2022],[-72.7704,-37.211],[-72.7267,-37.2942],[-72.7499,-37.3229],[-72.8041,-37.3075],[-72.8113,-37.3443],[-72.9238,-37.3535],[-72.9787,-37.4511],[-73.1217,-37.428],[-73.134,-37.3543],[-73.0656,-37.2558],[-73.1179,-37.2171],[-73.0666,-37.1974],[-73.0472,-37.1097],[-72.993,-37.0683]]]}},{"type":"Feature","properties":{"objectid":224,"shape_leng":175145.5609,"dis_elec":19,"cir_sena":10,"cod_comuna":8313,"codregion":8,"st_area_sh":1145754924.7,"st_length_":219175.5841,"Region":"Región del Bío-Bío","Comuna":"Yumbel","Provincia":"Bío-Bío","desc":"Santuario de San Sebastián. Mayor peregrinación religiosa del sur de Chile.","inv":"Infraestructura turismo religioso, hostelería, gastronomía.","cat":["turismo","forestal"],"cx":-72.60406,"cy":-37.08816},"geometry":{"type":"Polygon","coordinates":[[[-72.5979,-36.9243],[-72.5185,-36.932],[-72.5108,-37.0803],[-72.5326,-37.0979],[-72.4707,-37.1161],[-72.5116,-37.1354],[-72.4422,-37.1495],[-72.4513,-37.1878],[-72.4307,-37.1843],[-72.4224,-37.2145],[-72.5082,-37.2489],[-72.6419,-37.2376],[-72.6725,-37.1727],[-72.7517,-37.1952],[-72.792,-37.1673],[-72.764,-37.1381],[-72.7765,-37.077],[-72.7236,-37.0374],[-72.7744,-36.9965],[-72.7044,-36.9394],[-72.6491,-36.9527],[-72.6485,-36.9184],[-72.5979,-36.9243]]]}},{"type":"Feature","properties":{"objectid":213,"shape_leng":144203.938,"dis_elec":19,"cir_sena":10,"cod_comuna":8303,"codregion":8,"st_area_sh":1034854903.42,"st_length_":180760.2673,"Region":"Región del Bío-Bío","Comuna":"Cabrero","Provincia":"Bío-Bío","desc":"Zona industrial agroforestal en eje Ruta 5 Sur.","inv":"Logística ruta 5, industria agroforestal, parques industriales.","cat":["industria","forestal"],"cx":-72.40963,"cy":-37.05415},"geometry":{"type":"Polygon","coordinates":[[[-72.4716,-36.911],[-72.4202,-36.931],[-72.3853,-36.9118],[-72.326,-36.9814],[-72.1918,-37.0307],[-72.1872,-37.0531],[-72.2613,-37.0926],[-72.2773,-37.2049],[-72.4216,-37.2149],[-72.4307,-37.1843],[-72.4513,-37.1878],[-72.4422,-37.1495],[-72.5116,-37.1354],[-72.4707,-37.1161],[-72.5326,-37.0979],[-72.5108,-37.0803],[-72.5169,-36.9394],[-72.5022,-36.8957],[-72.4716,-36.911]]]}},{"type":"Feature","properties":{"objectid":212,"shape_leng":321068.2071,"dis_elec":21,"cir_sena":10,"cod_comuna":8302,"codregion":8,"st_area_sh":3100221109.12,"st_length_":404429.9262,"Region":"Región del Bío-Bío","Comuna":"Antuco","Provincia":"Bío-Bío","desc":"Volcán Antuco (2.979 m) y Laguna del Laja. Centro de ski y Parque Nacional.","inv":"Infraestructura turística de montaña, ski y verano, accesibilidad.","cat":["turismo"],"cx":-71.41632,"cy":-37.29589},"geometry":{"type":"Polygon","coordinates":[[[-71.2115,-37.2726],[-71.1992,-37.3811],[-71.1518,-37.4022],[-71.1175,-37.4886],[-71.1499,-37.5393],[-71.128,-37.5876],[-71.2234,-37.659],[-71.2837,-37.5843],[-71.3932,-37.5153],[-71.416,-37.4622],[-71.5669,-37.4699],[-71.6417,-37.4034],[-71.7913,-37.3438],[-71.8721,-37.3575],[-71.8856,-37.3518],[-71.9071,-37.3537],[-71.9244,-37.3485],[-71.6719,-37.3102],[-71.5237,-37.3109],[-71.5137,-37.1484],[-71.4845,-37.1145],[-71.5137,-37.0673],[-71.5439,-37.0627],[-71.5516,-37.0196],[-71.5104,-37.0045],[-71.41,-37.0903],[-71.3841,-37.0671],[-71.27,-37.1115],[-71.0962,-37.1096],[-71.1345,-37.1422],[-71.1148,-37.2067],[-71.1697,-37.2251],[-71.1873,-37.2762],[-71.2115,-37.2726]]]}},{"type":"Feature","properties":{"objectid":211,"shape_leng":248358.5273,"dis_elec":21,"cir_sena":10,"cod_comuna":8314,"codregion":8,"st_area_sh":3412402094.51,"st_length_":328915.4501,"Region":"Región del Bío-Bío","Comuna":"Alto Biobío","Provincia":"Bío-Bío","desc":"Territorio Pehuenche. Bosques de araucarias, lagunas glaciares y frontera con Argentina.","inv":"Etnoturismo sustentable, energía renovable, conservación araucaria.","cat":["turismo","forestal"],"cx":-71.33331,"cy":-37.86689},"geometry":{"type":"Polygon","coordinates":[[[-71.3224,-37.5553],[-71.2429,-37.6584],[-71.2006,-37.6543],[-71.2093,-37.6983],[-71.1255,-37.8219],[-71.1833,-37.8583],[-71.1408,-37.8592],[-71.1071,-37.891],[-71.1141,-37.9517],[-71.0617,-37.9704],[-71.0556,-38.0446],[-70.992,-38.0834],[-70.9906,-38.1109],[-71.0449,-38.1222],[-71.0853,-38.0896],[-71.2828,-38.1104],[-71.3546,-38.0842],[-71.4155,-38.1065],[-71.4391,-38.0582],[-71.4787,-38.0437],[-71.4838,-38.0038],[-71.5519,-37.984],[-71.5682,-37.9316],[-71.6049,-37.9275],[-71.6908,-37.8419],[-71.6584,-37.7666],[-71.5996,-37.7537],[-71.6129,-37.7308],[-71.5825,-37.6805],[-71.5463,-37.6872],[-71.4967,-37.6395],[-71.3847,-37.6336],[-71.3825,-37.5657],[-71.3224,-37.5553]]]}},{"type":"Feature","properties":{"objectid":210,"shape_leng":162681.4452,"dis_elec":21,"cir_sena":10,"cod_comuna":8207,"codregion":8,"st_area_sh":1017738625.02,"st_length_":216865.7566,"Region":"Región del Bío-Bío","Comuna":"Tirúa","Provincia":"Arauco","desc":"Costa mapuche lafkenche. Pesca artesanal y turismo étnico. Frente a Isla Mocha.","inv":"Turismo étnico comunitario, pesca artesanal, infraestructura costera.","cat":["pesca","turismo"],"cx":-73.3915,"cy":-38.32347},"geometry":{"type":"Polygon","coordinates":[[[-73.4987,-38.3378],[-73.514,-38.2608],[-73.4673,-38.2293],[-73.4521,-38.1163],[-73.4415,-38.1309],[-73.4144,-38.1132],[-73.3275,-38.1169],[-73.3253,-38.1691],[-73.2329,-38.2433],[-73.3411,-38.3656],[-73.3079,-38.3747],[-73.3088,-38.4121],[-73.2722,-38.4354],[-73.2746,-38.49],[-73.3213,-38.4823],[-73.3203,-38.4375],[-73.3825,-38.3986],[-73.4738,-38.473],[-73.5172,-38.4811],[-73.5295,-38.3872],[-73.4987,-38.3378]]]}},{"type":"Feature","properties":{"objectid":229,"shape_leng":48638.9034,"dis_elec":20,"cir_sena":10,"cod_comuna":8112,"codregion":8,"st_area_sh":82684187.2128,"st_length_":67851.359,"Region":"Región del Bío-Bío","Comuna":"Hualpén","Provincia":"Concepción","desc":"Zona industrial y petroquímica. Refinerías ENAP y reserva natural costera.","inv":"Reconversión energética, economía circular, parque industrial ampliado.","cat":["industria"],"cx":-73.16719,"cy":-36.78396},"geometry":{"type":"Polygon","coordinates":[[[-73.1746,-36.7597],[-73.0743,-36.7851],[-73.0664,-36.7955],[-73.0905,-36.8216],[-73.1747,-36.8137],[-73.1929,-36.7812],[-73.2117,-36.7867],[-73.216,-36.7848],[-73.2179,-36.787],[-73.221,-36.7859],[-73.1917,-36.7466],[-73.1746,-36.7597]]]}},{"type":"Feature","properties":{"objectid":235,"shape_leng":103046.362,"dis_elec":20,"cir_sena":10,"cod_comuna":8110,"codregion":8,"st_area_sh":143591218.111,"st_length_":136271.6211,"Region":"Región del Bío-Bío","Comuna":"Talcahuano","Provincia":"Concepción","desc":"Principal puerto de la región. Base naval, astilleros ASMAR y terminal de contenedores San Vicente.","inv":"Ampliación portuaria, logística de frío, industria naval, infraestructura multimodal.","cat":["logistica","industria","pesca"],"cx":-73.11253,"cy":-36.71833},"geometry":{"type":"MultiPolygon","coordinates":[[[[-73.1363,-36.6723],[-73.1377,-36.6723],[-73.1376,-36.6715],[-73.1372,-36.6715],[-73.1363,-36.6723]]],[[[-73.141,-36.6913],[-73.1065,-36.6151],[-73.1073,-36.7211],[-73.0096,-36.7386],[-73.0664,-36.7955],[-73.1517,-36.7627],[-73.1268,-36.7369],[-73.1625,-36.7125],[-73.141,-36.6913]]],[[[-73.049,-36.604],[-73.0472,-36.6041],[-73.0513,-36.6286],[-73.0588,-36.6335],[-73.0552,-36.643],[-73.0713,-36.6478],[-73.049,-36.604]]]]}},{"type":"Feature","properties":{"objectid":232,"shape_leng":67200.9833,"dis_elec":20,"cir_sena":10,"cod_comuna":8107,"codregion":8,"st_area_sh":167861406.408,"st_length_":86166.4529,"Region":"Región del Bío-Bío","Comuna":"Penco","Provincia":"Concepción","desc":"Puerto de Lirquén: terminal multipropósito de graneles y carga forestal.","inv":"Modernización terminal Lirquén, parque industrial, logística forestal.","cat":["logistica","industria"],"cx":-72.92889,"cy":-36.73867},"geometry":{"type":"Polygon","coordinates":[[[-72.9742,-36.6912],[-72.9265,-36.6945],[-72.9114,-36.7204],[-72.8917,-36.7072],[-72.8566,-36.7494],[-72.8637,-36.7945],[-72.9071,-36.7979],[-72.9434,-36.7638],[-73.0401,-36.7766],[-72.9742,-36.6912]]]}},{"type":"Feature","properties":{"objectid":236,"shape_leng":150061.1776,"dis_elec":20,"cir_sena":10,"cod_comuna":8111,"codregion":8,"st_area_sh":768833222.526,"st_length_":191769.7899,"Region":"Región del Bío-Bío","Comuna":"Tomé","Provincia":"Concepción","desc":"Tradición textil y pesquera. Balneario costero con turismo patrimonial.","inv":"Infraestructura turística costera, caletas pesqueras, turismo patrimonial.","cat":["pesca","turismo"],"cx":-72.86871,"cy":-36.59611},"geometry":{"type":"Polygon","coordinates":[[[-72.888,-36.4434],[-72.8097,-36.4597],[-72.8011,-36.5107],[-72.8278,-36.5264],[-72.7982,-36.6059],[-72.7337,-36.6172],[-72.7158,-36.6651],[-72.705,-36.7048],[-72.7799,-36.7417],[-72.8661,-36.7488],[-72.8917,-36.7072],[-72.9114,-36.7204],[-72.9844,-36.6727],[-72.9559,-36.6268],[-73.0019,-36.5786],[-72.9757,-36.5259],[-72.9532,-36.5234],[-72.9549,-36.5567],[-72.9317,-36.5433],[-72.888,-36.4434]]]}},{"type":"Feature","properties":{"objectid":204,"shape_leng":224439.9753,"dis_elec":21,"cir_sena":10,"cod_comuna":8202,"codregion":8,"st_area_sh":1517260914.39,"st_length_":282195.4124,"Region":"Región del Bío-Bío","Comuna":"Arauco","Provincia":"Arauco","desc":"Polo forestal-celulosa (Planta Arauco). Pesca artesanal y cultura lafkenche.","inv":"Forestal 2ª transformación, pesca con valor agregado, turismo cultural lafkenche.","cat":["forestal","pesca"],"cx":-73.40836,"cy":-37.2944},"geometry":{"type":"Polygon","coordinates":[[[-73.6122,-37.4154],[-73.6348,-37.375],[-73.685,-37.3674],[-73.6839,-37.3355],[-73.6557,-37.2995],[-73.6495,-37.2027],[-73.5873,-37.1453],[-73.5427,-37.2047],[-73.457,-37.2046],[-73.4301,-37.2389],[-73.3876,-37.244],[-73.2685,-37.2238],[-73.1866,-37.1525],[-73.099,-37.1629],[-73.0801,-37.202],[-73.1188,-37.2236],[-73.0656,-37.2558],[-73.1332,-37.3569],[-73.2247,-37.3571],[-73.279,-37.3296],[-73.3064,-37.3596],[-73.3901,-37.3559],[-73.3983,-37.3287],[-73.5407,-37.4502],[-73.5883,-37.4473],[-73.6122,-37.4154]]]}},{"type":"Feature","properties":{"objectid":222,"shape_leng":232964.5041,"dis_elec":21,"cir_sena":10,"cod_comuna":8311,"codregion":8,"st_area_sh":1995529342.05,"st_length_":290506.0689,"Region":"Región del Bío-Bío","Comuna":"Santa Bárbara","Provincia":"Bío-Bío","desc":"Puerta de entrada a la cordillera. Trekking y turismo de aventura.","inv":"Turismo aventura, infraestructura hotelera rural, deportes de naturaleza.","cat":["turismo","forestal"],"cx":-71.68965,"cy":-37.62472},"geometry":{"type":"Polygon","coordinates":[[[-71.6226,-37.7696],[-71.6573,-37.7661],[-71.6948,-37.8051],[-71.7081,-37.7746],[-71.7762,-37.763],[-71.8246,-37.7088],[-71.894,-37.7157],[-72.0855,-37.6479],[-72.1722,-37.6644],[-72.1568,-37.5899],[-71.9721,-37.5315],[-71.898,-37.5497],[-71.8566,-37.5125],[-71.7918,-37.5034],[-71.7357,-37.5102],[-71.7039,-37.5405],[-71.55,-37.5411],[-71.4873,-37.5708],[-71.4626,-37.5587],[-71.4713,-37.473],[-71.416,-37.4622],[-71.3526,-37.5491],[-71.3911,-37.579],[-71.3814,-37.6288],[-71.4967,-37.6395],[-71.5463,-37.6872],[-71.5822,-37.6802],[-71.6226,-37.7696]]]}}]};
+const PC={"Concepción":{b:"#C8880A",l:"#F5DFA0",d:"#A36800"},"Arauco":{b:"#4A8C3F",l:"#C5E0BF",d:"#2E6B24"},"Bío-Bío":{b:"#C06010",l:"#F5C88A",d:"#8C4200"}};
+const CC={logistica:"#534AB7",pesca:"#1D9E75",turismo:"#7AB648",industria:"#E8A020",forestal:"#888780"};
+const CL={logistica:"Logística",pesca:"Pesca/Acuicultura",turismo:"Turismo",industria:"Industria",forestal:"Forestal/Agro"};
+const CM={turismo:"tt",industria:"ti",pesca:"tpe",logistica:"tl",forestal:"tf"};
+const MUNI={"concepcion":"https://www.concepcion.cl","talcahuano":"https://www.talcahuano.cl","hualpen":"http://www.hualpenciudad.cl/","chiguayante":"https://www.chiguayante.cl","san pedro de la paz":"https://www.sanpedrodelapaz.cl","penco":"https://www.penco.cl","tome":"https://www.tome.cl","coronel":"https://www.coronel.cl","lota":"https://www.lota.cl","santa juana":"https://www.santajuana.cl","florida":"https://www.muniflorida.cl","hualqui":"https://www.munihualqui.cl","lebu":"https://www.lebu.cl","arauco":"https://www.muniarauco.cl","canete":"https://www.municanete.cl","curanilahue":"https://munichue.com/wp/","los alamos":"https://munilosalamos.gob.cl/","contulmo":"https://www.contulmo.cl","tirua":"https://www.munitirua.com","los angeles":"https://www.losangeles.cl","cabrero":"https://www.cabrero.cl","laja":"https://www.munilaja.cl","mulchen":"https://www.munimulchen.cl","nacimiento":"https://www.nacimiento.cl","negrete":"https://www.muninegrete.cl/","quilaco":"https://www.municipalidadquilaco.cl","quilleco":"https://www.municipalidadquilleco.cl","san rosendo":"https://www.municipalidadsanrosendo.cl","santa barbara":"https://www.santabarbara.cl","tucapel":"https://www.municipalidadtucapel.cl","yumbel":"https://www.yumbel.cl","antuco":"https://www.municipalidadantuco.cl","alto biobio":"https://www.munialtobiobio.cl"};
+const KPIS={"Concepción":[{v:"1°",l:"Puerto región"},{v:"2°",l:"Polo industrial"},{v:"8",l:"Universidades"},{v:"Gran CCP",l:"Área metro"}],"Talcahuano":[{v:"SAN VICENTE",l:"Terminal cont."},{v:"ASMAR",l:"Astillero"},{v:"Base Naval",l:"Institución"},{v:"1°",l:"Puerto región"}],"Penco":[{v:"LIRQUÉN",l:"Puerto privado"},{v:"Graneles",l:"Carga ppal."},{v:"Forestal",l:"Exportación"},{v:"Ruta 150",l:"Acceso"}],"Tomé":[{v:"Dichato",l:"Balneario"},{v:"Textil",l:"Patrimonio"},{v:"Pesca",l:"Artesanal"},{v:"Costa",l:"Turismo"}],"Coronel":[{v:"IGEMAR",l:"Terminal"},{v:"Gas",l:"Central"},{v:"Pesca ind.",l:"Puerto"},{v:"Carbón",l:"Historia"}],"Lota":[{v:"Mina",l:"Museo nac."},{v:"Parque",l:"Cousiño"},{v:"Caleta",l:"Pesca"},{v:"UNESCO",l:"Candidato"}],"Chiguayante":[{v:"Gran CCP",l:"Área metro"},{v:"Ind. liviana",l:"Zona"},{v:"Río",l:"Biobío"},{v:"Ruta 160",l:"Conectividad"}],"Hualpén":[{v:"ENAP",l:"Refinería"},{v:"Petroquím.",l:"Clúster"},{v:"Reserva",l:"Natural costera"},{v:"Ind.",l:"Parque"}],"San Pedro de la Paz":[{v:"Lagunas",l:"Urbanas"},{v:"Mall",l:"Comercio"},{v:"Ind. sur",l:"Zona"},{v:"Ruta 160",l:"Conect."}],"Florida":[{v:"Forestal",l:"Uso suelo"},{v:"Pino/Euca.",l:"Especies"},{v:"Rural",l:"Economía"},{v:"Corredor",l:"Biodiversidad"}],"Hualqui":[{v:"Río",l:"Biobío ribera"},{v:"Forestal",l:"Producción"},{v:"Cereales",l:"Agro"},{v:"Rural",l:"Economía"}],"Santa Juana":[{v:"Rafting",l:"Aventura"},{v:"Forestal",l:"Corredor"},{v:"Biobío",l:"Ribera"},{v:"Rural",l:"Ecoturismo"}],"Arauco":[{v:"Arauco",l:"Planta celulosa"},{v:"MASISA",l:"Tableros"},{v:"Pesca",l:"Artesanal"},{v:"Lafkenche",l:"Cultura"}],"Curanilahue":[{v:"Carbón",l:"Patrimonio"},{v:"Forestal",l:"Actual"},{v:"Reconver.",l:"Economía"},{v:"Precord.",l:"Ecoturismo"}],"Los Alamos":[{v:"Forestal",l:"Producción"},{v:"Pino rad.",l:"Especie"},{v:"Eucalit.",l:"Especie"},{v:"Rural",l:"Economía"}],"Cañete":[{v:"Museo",l:"Mapuche Ríos"},{v:"Lanalhue",l:"Lago"},{v:"Capital",l:"Prov. Arauco"},{v:"Cultural",l:"Turismo"}],"Contulmo":[{v:"Lanalhue",l:"Lago turístico"},{v:"Lleulleu",l:"Lago eco"},{v:"Mapuche",l:"Etnoturismo"},{v:"Bosque",l:"Nativo"}],"Lebu":[{v:"Puerto",l:"Pesquero"},{v:"Artesanal",l:"Pesca"},{v:"Carbón",l:"Patrimonio"},{v:"Costa",l:"Ciudad"}],"Tirúa":[{v:"Lafkenche",l:"Territorio"},{v:"Isla Mocha",l:"Frente"},{v:"Pesca",l:"Artesanal"},{v:"Étnico",l:"Turismo"}],"Los Angeles":[{v:"Agro-ind.",l:"Hub"},{v:"Forestal",l:"Polo"},{v:"Aeródromo",l:"El Balseo"},{v:"Capital",l:"Prov. Biobío"}],"Nacimiento":[{v:"Forestal",l:"Producción"},{v:"Biobío",l:"Corredor"},{v:"Celulosa",l:"Industria"},{v:"Madera",l:"Aserrada"}],"Mulchén":[{v:"Termas",l:"Precordillera"},{v:"Pesca dep.",l:"Ríos"},{v:"Forestal",l:"Producción"},{v:"Naturaleza",l:"Turismo"}],"Negrete":[{v:"Cereales",l:"Cultivo"},{v:"Ganadería",l:"Bovina"},{v:"Forestal",l:"Pino/Euca."},{v:"Ribera",l:"Biobío"}],"Quilaco":[{v:"Ríos",l:"Alta calidad"},{v:"Ecotur.",l:"Precord."},{v:"Pesca dep.",l:"Trucha"},{v:"Forestal",l:"Andino"}],"Santa Bárbara":[{v:"Trekking",l:"Rutas"},{v:"Pesca dep.",l:"Ríos"},{v:"Cordillera",l:"Acceso"},{v:"Aventura",l:"Turismo"}],"Quilleco":[{v:"Lácteos",l:"Producción"},{v:"Ganadería",l:"Bovina"},{v:"Forestal",l:"Pino/Euca."},{v:"Rural",l:"Economía"}],"Tucapel":[{v:"Hídrico",l:"Recursos"},{v:"Forestal",l:"Alto Biobío"},{v:"Precord.",l:"Zona"},{v:"Rural",l:"Economía"}],"Antuco":[{v:"2.979m",l:"Volcán Antuco"},{v:"Laguna",l:"Del Laja"},{v:"Ski",l:"Centro invernal"},{v:"PN",l:"Laguna del Laja"}],"Alto Biobío":[{v:"Pehuenche",l:"Pueblo orig."},{v:"Araucaria",l:"Bosque endém."},{v:"Hidroel.",l:"Pangue/Ralco"},{v:"Frontera",l:"Argentina"}],"Yumbel":[{v:"~2M",l:"Peregrinos/año"},{v:"Santuario",l:"S. Sebastián"},{v:"Cereales",l:"Agro"},{v:"Religioso",l:"Turismo"}],"Cabrero":[{v:"Ruta 5",l:"Eje sur"},{v:"Industrial",l:"Zona"},{v:"Forestal",l:"Agroforestal"},{v:"Nudo vial",l:"Estratégico"}],"Laja":[{v:"CMPC",l:"Planta papelera"},{v:"Salto Laja",l:"Atractivo nac."},{v:"Forestal",l:"Industria"},{v:"Hídrico",l:"Recurso"}],"San Rosendo":[{v:"Ferrovía",l:"Nudo hist."},{v:"EFE",l:"Conectividad"},{v:"Logística",l:"Interregional"},{v:"Biobío",l:"Ribera"}]};
+const INFRA=[
+  {n:"Puerto San Vicente",sub:"Terminal de contenedores · Talcahuano",lat:-36.7269,lng:-73.1283,tipo:"puerto"},
+  {n:"Puerto Talcahuano",sub:"Base naval · ASMAR",lat:-36.6959,lng:-73.1057,tipo:"puerto"},
+  {n:"Puerto Lirquén",sub:"Graneles y carga forestal · Penco",lat:-36.7104,lng:-72.9866,tipo:"puerto"},
+  {n:"Puerto Coronel",sub:"Terminal granelero · contenedores",lat:-37.0277,lng:-73.1496,tipo:"puerto"},
+  {n:"Puerto pesquero de Lebu",sub:"Caleta artesanal mayor · Arauco",lat:-37.6080,lng:-73.6580,tipo:"puerto"},
+  {n:"Aeropuerto Carriel Sur (CCP)",sub:"Internacional · 8 destinos · 1,1M pas./año",lat:-36.7727,lng:-73.0631,tipo:"aero"},
+  {n:"Aeródromo María Dolores",sub:"Los Ángeles · conectividad provincial",lat:-37.3969,lng:-72.4254,tipo:"aero"},
+  {n:"Complejo Forestal Horcones — ARAUCO",sub:"Celulosa MAPA · aserraderos · paneles · Arauco",lat:-37.2450,lng:-73.3180,tipo:"planta"},
+  {n:"CMPC Planta Laja",sub:"Celulosa y papel · Laja",lat:-37.2786,lng:-72.7058,tipo:"planta"},
+  {n:"CMPC Santa Fe",sub:"Celulosa · Nacimiento",lat:-37.4787,lng:-72.6520,tipo:"planta"},
+  {n:"Central Ralco",sub:"Hidroeléctrica 690 MW · Alto Biobío",lat:-37.9450,lng:-71.4760,tipo:"hidro"},
+  {n:"Central Pangue",sub:"Hidroeléctrica 467 MW · Alto Biobío",lat:-37.8997,lng:-71.6164,tipo:"hidro"},
+  {n:"Central Angostura",sub:"Hidroeléctrica 324 MW · Santa Bárbara · Quilaco",lat:-37.7850,lng:-71.9400,tipo:"hidro"},
+  {n:"Central El Toro",sub:"Hidroeléctrica 450 MW · cuenca del Laja · Antuco",lat:-37.2870,lng:-71.4980,tipo:"hidro"},
+  {n:"Parque Eólico Cuel — Negrete",sub:"Primer parque eólico del Biobío",lat:-37.5850,lng:-72.5300,tipo:"eolico"},
+  {n:"Parque Eólico Los Olmos",sub:"Mulchén · valle central",lat:-37.6500,lng:-72.3500,tipo:"eolico"},
+  {n:"Corredor eólico costa de Arauco",sub:"Lebu · uno de los mejores vientos de Chile",lat:-37.6600,lng:-73.5800,tipo:"eolico"},
+  {n:"Parques solares PMGD",sub:"Cabrero · Yumbel · generación distribuida",lat:-37.0500,lng:-72.4500,tipo:"solar"},
+  {n:"Parques solares PMGD",sub:"Los Ángeles · valle central",lat:-37.4200,lng:-72.3000,tipo:"solar"}
+];
+const INFRA_ICO={puerto:["","⚓"],aero:["aero","✈️"],planta:["planta","🏭"],hidro:["hidro","💧"],solar:["solar","☀️"],eolico:["eolico","💨"]};
+const RUTASLOG=[
+  {nombre:"Ruta 5 Sur · Panamericana",grupo:"long",sub:"Columna vertebral N-S · principal flujo de carga nacional · Cabrero, Los Ángeles, Mulchén",coords:[[-36.90,-72.42],[-37.02,-72.41],[-37.18,-72.39],[-37.34,-72.37],[-37.46,-72.34],[-37.58,-72.30],[-37.72,-72.25],[-37.90,-72.16],[-38.05,-72.06]]},
+  {nombre:"Ruta 160 · Eje costero sur",grupo:"long",sub:"San Pedro · Coronel · Arauco · Lebu · gran flujo de carga forestal",coords:[[-36.85,-73.10],[-36.94,-73.14],[-37.03,-73.15],[-37.09,-73.16],[-37.18,-73.24],[-37.25,-73.32],[-37.40,-73.40],[-37.52,-73.52],[-37.61,-73.65]]},
+  {nombre:"Ruta 146 · Valles del Biobío",grupo:"trans",sub:"Conecta Ruta 5 (Cabrero) con Concepción · vía directa de carga hacia los puertos",coords:[[-37.02,-72.43],[-36.96,-72.65],[-36.90,-72.88],[-36.85,-73.02],[-36.83,-73.05]]},
+  {nombre:"Ruta 152 · Autopista del Itata",grupo:"trans",sub:"Acceso norte desde Ñuble/Chillán hacia Penco, Lirquén y Talcahuano",coords:[[-36.60,-72.40],[-36.64,-72.60],[-36.68,-72.80],[-36.72,-72.92],[-36.74,-72.99]]},
+  {nombre:"Ruta 156 · Ruta de la Madera",grupo:"trans",sub:"Ribera sur del Biobío · Nacimiento y Santa Juana hacia San Pedro · papeleras CMPC",coords:[[-37.50,-72.67],[-37.40,-72.80],[-37.18,-72.94],[-37.02,-73.02],[-36.86,-73.09]]},
+  {nombre:"Ruta 154 · Interportuaria",grupo:"inter",sub:"Penco–Talcahuano (San Vicente) bordeando Carriel Sur · evita el centro urbano",coords:[[-36.74,-72.99],[-36.745,-73.05],[-36.735,-73.11]]},
+  {nombre:"Ruta 150 · Concepción–Tomé",grupo:"inter",sub:"Canaliza la carga hacia DP World Lirquén · Concepción, Penco, Tomé",coords:[[-36.83,-73.05],[-36.74,-73.00],[-36.68,-72.97],[-36.62,-72.96]]},
+  {nombre:"Ruta Pie de Monte",grupo:"inter",futuro:true,badge:"Proyecto 2026",sub:"Concesión paralela a Ruta 160 por los cerros de San Pedro · saca camiones de la zona urbana",coords:[[-36.85,-73.08],[-36.93,-73.11],[-37.01,-73.14]]},
+  {nombre:"Ruta CH-45 · Acceso a Paso Pichachén",grupo:"trans",sub:"Conecta Los Ángeles y Antuco con el paso fronterizo cordillerano · eje del futuro corredor bioceánico hacia Neuquén (Argentina)",coords:[[-37.46,-72.34],[-37.40,-72.00],[-37.34,-71.70],[-37.40,-71.45],[-37.42,-71.25],[-37.42,-71.10]]}
+];
+const PUENTES=[
+  {n:"Puente Industrial",sub:"Operativo · obra terminada · carga pesada · conecta la Ruta 160 con Hualpén y Talcahuano sin pasar por el centro de Concepción · el más cercano a la desembocadura",lat:-36.8070,lng:-73.1050,badge:"Operativo",badgeClass:"ok"},
+  {n:"Puente Juan Pablo II",sub:"Histórico · principal cruce vehicular del Gran Concepción · restricciones técnicas para carga sobredimensionada",lat:-36.8205,lng:-73.0945},
+  {n:"Puente Ferroviario",sub:"Cruce ferroviario sobre el Biobío · nuevo puente ferroviario en construcción",lat:-36.8275,lng:-73.0915},
+  {n:"Puente Llacolén",sub:"Multipropósito de alta capacidad · alta congestión vehicular",lat:-36.8345,lng:-73.0888},
+  {n:"Puente Chacabuco",sub:"San Pedro–costanera de Concepción · conexión directa a Av. Chacabuco · el más hacia el interior del río",lat:-36.8430,lng:-73.0830}
+];
+const PASOS=[
+  {n:"Paso Pichachén",sub:"Único paso fronterizo regional · +2.000 m · hacia Neuquén (Argentina) · nuevo complejo 85% avance 2026 · futuro corredor bioceánico",lat:-37.42,lng:-71.10,badge:"Obras 85%"}
+];
+const LOG_COL={long:"#1A4D7A",trans:"#D97706",inter:"#7C3AED"};
+
+/* ═════════ CAPA TURÍSTICA ═════════ */
+const TCATS={
+  playa:{e:"🏖️",n:"Playas y balnearios"}, caleta:{e:"🐟",n:"Caletas y cocina de mar"},
+  patrimonio:{e:"🏛️",n:"Patrimonio e historia"}, naturaleza:{e:"🌳",n:"Parques y naturaleza"},
+  lagos:{e:"🛶",n:"Lagos y ríos"}, montana:{e:"🏔️",n:"Montaña y volcanes"},
+  cultura:{e:"🗿",n:"Culturas originarias"}, gastro:{e:"🍇",n:"Gastronomía y viñedos"}
+};
+/* Atractivos por cod_comuna */
+const TUR={
+ 8111:[{n:"Balneario de Dichato y Playa Blanca",c:"playa"},{n:"Caleta Cocholgüe",c:"caleta"},{n:"Patrimonio textil e industrial",c:"patrimonio"}],
+ 8107:[{n:"Playa de Penco y Lirquén",c:"playa"},{n:"Fuerte La Planchada (1687)",c:"patrimonio"}],
+ 8110:[{n:"Monitor Huáscar",c:"patrimonio"},{n:"Caleta Tumbes",c:"caleta"},{n:"Parque Tumbes",c:"naturaleza"}],
+ 8112:[{n:"Santuario Península de Hualpén",c:"naturaleza"},{n:"Caleta Lenga y su gastronomía",c:"caleta"}],
+ 8101:[{n:"Barrio Universitario y murales",c:"patrimonio"},{n:"Desembocadura del río Biobío",c:"naturaleza"},{n:"Circuito gastronómico y bohemio",c:"gastro"}],
+ 8108:[{n:"Lagunas Grande y Chica",c:"lagos"},{n:"Humedal Los Batros",c:"naturaleza"}],
+ 8103:[{n:"Cerro Manquimávida",c:"naturaleza"},{n:"Ribera del Biobío",c:"lagos"}],
+ 8105:[{n:"Talcamávida y ribera del Biobío",c:"lagos"},{n:"Bosques y microclima",c:"naturaleza"}],
+ 8104:[{n:"Tradición campesina del secano",c:"gastro"},{n:"Cerros y paisaje rural",c:"naturaleza"}],
+ 8102:[{n:"Caleta Maule",c:"caleta"},{n:"Playa Escuadrón",c:"playa"},{n:"Patrimonio del carbón",c:"patrimonio"}],
+ 8106:[{n:"Mina Chiflón del Diablo",c:"patrimonio"},{n:"Parque Isidora Cousiño",c:"naturaleza"},{n:"Playa Blanca",c:"playa"}],
+ 8109:[{n:"Fuerte Santa Juana de Guadalcázar",c:"patrimonio"},{n:"Rafting y ribera del Biobío",c:"lagos"}],
+ 8303:[{n:"Salto del Laja (acceso norte)",c:"naturaleza"},{n:"Gastronomía de carretera",c:"gastro"}],
+ 8313:[{n:"Santuario de San Sebastián (~2M peregrinos/año)",c:"patrimonio"},{n:"Balnearios rurales del Claro",c:"lagos"}],
+ 8312:[{n:"Laguna El Manco",c:"lagos"},{n:"Precordillera de Huépil",c:"naturaleza"}],
+ 8302:[{n:"Parque Nacional Laguna del Laja",c:"naturaleza"},{n:"Volcán Antuco (2.979 m) y centro de ski",c:"montana"}],
+ 8304:[{n:"Saltos del Laja",c:"naturaleza"},{n:"Confluencia Laja–Biobío",c:"lagos"}],
+ 8310:[{n:"Patrimonio ferroviario (nudo EFE)",c:"patrimonio"},{n:"Ribera del Biobío",c:"lagos"}],
+ 8301:[{n:"Puerta a Saltos del Laja y cordillera",c:"naturaleza"},{n:"Gastronomía y vida urbana",c:"gastro"}],
+ 8309:[{n:"Precordillera y bosques",c:"naturaleza"},{n:"Tradición campesina y láctea",c:"gastro"}],
+ 8306:[{n:"Fuerte de Nacimiento (1603)",c:"patrimonio"},{n:"Confluencia Vergara–Biobío",c:"lagos"}],
+ 8307:[{n:"Vega del Biobío y ruralidad",c:"gastro"},{n:"Memoria de los parlamentos hispano-mapuche",c:"cultura"}],
+ 8305:[{n:"Termas precordilleranas",c:"montana"},{n:"Pesca deportiva en ríos Bureo y Mulchén",c:"lagos"}],
+ 8308:[{n:"Ríos de alta calidad para pesca de trucha",c:"lagos"},{n:"Ecoturismo andino",c:"naturaleza"}],
+ 8311:[{n:"Trekking y turismo aventura",c:"montana"},{n:"Río Biobío y balnearios fluviales",c:"lagos"}],
+ 8314:[{n:"Comunidades pewenche del Queuco y Biobío",c:"cultura"},{n:"Araucarias milenarias y piñón",c:"naturaleza"},{n:"Volcán Callaqui y lagunas glaciares",c:"montana"}],
+ 8202:[{n:"Playa Laraquete",c:"playa"},{n:"Caletas Tubul, Llico y Punta Lavapié",c:"caleta"},{n:"Memoria de la Guerra de Arauco",c:"cultura"}],
+ 8205:[{n:"Patrimonio minero del carbón",c:"patrimonio"},{n:"Valle del Trongol",c:"naturaleza"}],
+ 8201:[{n:"Cavernas y arcos de piedra de Lebu",c:"naturaleza"},{n:"Puerto pesquero artesanal",c:"caleta"},{n:"Playas de arena y surf",c:"playa"}],
+ 8206:[{n:"Bosques de Nahuelbuta (acceso)",c:"naturaleza"},{n:"Tradición carbonífera",c:"patrimonio"}],
+ 8203:[{n:"Museo Mapuche de Cañete",c:"cultura"},{n:"Lago Lanalhue",c:"lagos"},{n:"Fuerte Tucapel (memoria)",c:"patrimonio"}],
+ 8204:[{n:"Lagos Lanalhue y Lleulleu",c:"lagos"},{n:"Molino Grollmus y herencia alemana",c:"patrimonio"},{n:"Cordillera de Nahuelbuta",c:"naturaleza"}],
+ 8207:[{n:"Cultura lafkenche viva",c:"cultura"},{n:"Isla Mocha y su reserva",c:"naturaleza"},{n:"Caletas del sur",c:"caleta"}]
+};
+/* Jerarquía urbana */
+const JER={8101:"★ Capital regional",8201:"● Capital provincial · Arauco",8301:"● Capital provincial · Biobío"};
+
+/* Rutas turísticas georreferenciadas */
+const RUTASTUR=[
+ {id:"costera",n:"Ruta Costera del Biobío",c:"#E0483C",sub:"Tomé · Penco · Talcahuano · San Pedro · Coronel · Lota · Arauco · Lebu",
+  coords:[[-36.617,-72.957],[-36.741,-72.99],[-36.724,-73.117],[-36.84,-73.11],[-37.03,-73.15],[-37.09,-73.157],[-37.17,-73.19],[-37.246,-73.317],[-37.608,-73.653]]},
+ {id:"carbon",n:"Ruta del Carbón",c:"#8C5A2B",sub:"Patrimonio minero: Coronel · Lota · Curanilahue · Lebu",
+  coords:[[-37.03,-73.15],[-37.09,-73.157],[-37.47,-73.34],[-37.608,-73.653]]},
+ {id:"nahuelbuta",n:"Ruta Lagos de Nahuelbuta",c:"#9C4DCC",sub:"Lebu · Los Álamos · Cañete · Lanalhue · Contulmo · Lleulleu · Tirúa",
+  coords:[[-37.608,-73.653],[-37.62,-73.46],[-37.80,-73.40],[-37.92,-73.31],[-38.01,-73.23],[-38.15,-73.32],[-38.34,-73.49]]},
+ {id:"cordillera",n:"Ruta Cordillerana del Laja",c:"#1B90B8",sub:"Los Ángeles · Antuco · Laguna del Laja · volcán y ski",
+  coords:[[-37.47,-72.35],[-37.38,-72.00],[-37.33,-71.68],[-37.36,-71.42],[-37.38,-71.30]]},
+ {id:"pewenche",n:"Ruta Pewenche del Alto Biobío",c:"#E0A32E",sub:"Los Ángeles · Santa Bárbara · Ralco · valle del Queuco",
+  coords:[[-37.47,-72.35],[-37.665,-72.02],[-37.85,-71.60],[-37.93,-71.44]]}
+];
+/* Hitos turísticos (museos, parques, playas) */
+const TURPOIS=[
+ {n:"Monitor Huáscar",sub:"Museo flotante · Talcahuano",lat:-36.694,lng:-73.106,t:"museo"},
+ {n:"Parque-Museo Pedro del Río Zañartu",sub:"Casona y parque · desembocadura del Biobío · Hualpén",lat:-36.768,lng:-73.155,t:"museo"},
+ {n:"Casa del Arte UdeC",sub:"Pinacoteca · mural Presencia de América Latina · Concepción",lat:-36.829,lng:-73.036,t:"museo"},
+ {n:"Museo de la Historia de Penco",sub:"Penco, primer emplazamiento de Concepción",lat:-36.741,lng:-72.995,t:"museo"},
+ {n:"Museo Histórico de Lota · Chiflón del Diablo",sub:"Circuito del carbón · mina bajo el mar",lat:-37.098,lng:-73.157,t:"museo"},
+ {n:"Museo Mapuche de Cañete",sub:"Ruka Kimvn Taiñ Volil · cultura lafkenche",lat:-37.79,lng:-73.39,t:"museo"},
+ {n:"P.N. Laguna del Laja",sub:"Volcán Antuco · Antuco",lat:-37.38,lng:-71.31,t:"parque"},
+ {n:"P.N. Nonguén",sub:"Bosque nativo del Gran Concepción",lat:-36.87,lng:-72.98,t:"parque"},
+ {n:"R.N. Isla Mocha",sub:"Bosque valdiviano y fardela blanca · Tirúa",lat:-38.37,lng:-73.90,t:"parque"},
+ {n:"R.N. Ralco",sub:"Araucarias andinas · Alto Biobío",lat:-37.95,lng:-71.35,t:"parque"},
+ {n:"M.N. Contulmo",sub:"Bosque húmedo relicto · Nahuelbuta",lat:-38.02,lng:-73.18,t:"parque"},
+ {n:"Santuario Península de Hualpén",sub:"Santuario de la naturaleza costero",lat:-36.77,lng:-73.18,t:"parque"},
+ {n:"Saltos del Laja",sub:"Atractivo natural de jerarquía nacional",lat:-37.213,lng:-72.379,t:"natural"},
+ {n:"Balneario de Dichato",sub:"Principal balneario regional · Tomé",lat:-36.545,lng:-72.93,t:"playa"},
+ {n:"Caleta Lenga",sub:"Gastronomía de mar · Hualpén",lat:-36.76,lng:-73.17,t:"playa"},
+ {n:"Playa Laraquete",sub:"Arenas y desembocadura · Arauco",lat:-37.17,lng:-73.19,t:"playa"}
+];
+const TURPOI_N={museo:"Museo",parque:"Área protegida",playa:"Playa / caleta",natural:"Hito natural"};
+
+/* ═════════ MAPA ═════════ */
+const REDUCIDO=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const map=L.map("map",{center:[-33.5,-71.5],zoom:5,minZoom:7,maxZoom:13,zoomControl:true});
+const baseSat=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Imagen satelital © Esri, Maxar | Plataforma Biobío · CDBB 2026",maxZoom:18});
+const baseClaro=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"© OpenStreetMap · © CARTO | Plataforma Biobío · CDBB 2026",maxZoom:18});
+let baseActual="sat"; baseSat.addTo(map);
+map.setMinZoom(5);
+
+const BOUNDS=L.geoJSON(GJ).getBounds();
+setTimeout(()=>{
+  if(REDUCIDO){map.fitBounds(BOUNDS,{padding:[24,24],animate:false});}
+  else{map.flyToBounds(BOUNDS,{padding:[24,24],duration:2.2});}
+  map.setMinZoom(7);
+  setTimeout(()=>map.setMaxBounds(L.latLngBounds([-38.65,-74.2],[-36.15,-70.8]).pad(.05)),2600);
+},350);
+
+/* ═════════ ESTADO ═════════ */
+let modo="comunas", aF="all", aFT=null, aP="all", aS="", selId=null;
+const lyrs={}, labelMarkers={};
+
+function catColor(cats){const p=["logistica","pesca","turismo","industria","forestal"];for(const x of p)if(cats.includes(x))return CC[x];return "#888";}
+function turMatch(p){if(!aFT)return true;const t=TUR[p.cod_comuna]||[];return t.some(a=>a.c===aFT);}
+function pasaFiltro(p){
+  const cats=p.cat||[];
+  if(aP!=="all"&&p.Provincia!==aP)return false;
+  if(modo==="comunas"&&aF!=="all"&&aF!=="none"&&!cats.includes(aF))return false;
+  if(modo==="comunas"&&aF==="none")return false;
+  if(modo==="turismo"&&!turMatch(p))return false;
+  if(aS&&!p.Comuna.toLowerCase().includes(aS.toLowerCase()))return false;
+  return true;
+}
+function sty(f,hover){
+  const p=f.properties, pc=PC[p.Provincia]||PC["Concepción"];
+  const ok=pasaFiltro(p), sel=selId===p.cod_comuna;
+  if(modo==="logistica"){
+    return {color:"#7C8794",weight:sel?2.2:1,fillColor:"#DDE3E8",fillOpacity:sel?.5:.28,opacity:.8};
+  }
+  let fill=pc.l, line=pc.b;
+  if(modo==="comunas"&&aF!=="all"&&aF!=="none"&&ok) fill=CC[aF];
+  if(modo==="turismo"&&aFT&&ok) fill="#BFE3A6";
+  return {
+    color: sel?"#FFD54A": hover?pc.d:line,
+    weight: sel?3.4: hover?2.6:1.5,
+    fillColor: hover&&ok? pc.b : fill,
+    fillOpacity: !ok? .06 : sel? .78 : hover? .72 : .58,
+    opacity: !ok? .18 : 1
+  };
+}
+
+/* polígonos con entrada escalonada */
+const gjL=L.geoJSON(GJ,{style:f=>Object.assign(sty(f,false),{fillOpacity:0,opacity:0}),onEachFeature:(feat,layer)=>{
+  const id=feat.properties.cod_comuna; lyrs[id]=layer;
+  layer.bindTooltip(feat.properties.Comuna,{sticky:true,className:"com-tip",direction:"top"});
+  layer.on("mouseover",function(){ if(!pasaFiltro(feat.properties))return; this.setStyle(sty(feat,true)); this.bringToFront(); labelGroup.eachLayer(l=>l.setZIndexOffset&&l.setZIndexOffset(1000)); });
+  layer.on("mouseout",function(){ this.setStyle(sty(feat,false)); });
+  layer.on("click",function(){ seleccionar(id); });
+}}).addTo(map);
+/* animación de entrada */
+{
+  let i=0;
+  gjL.eachLayer(l=>{
+    const d=REDUCIDO?0:i*45+600; i++;
+    setTimeout(()=>l.setStyle(sty(l.feature,false)),d);
+  });
+}
+
+/* etiquetas de comunas */
+const labelGroup=L.layerGroup().addTo(map);
+GJ.features.forEach(f=>{
+  const p=f.properties;
+  const big=!!JER[p.cod_comuna];
+  const html='<span style="font-size:'+(big?12:10)+'px">'+(big?p.Comuna.toUpperCase():p.Comuna)+'</span>';
+  const icon=L.divIcon({html:html,className:"label-comuna",iconAnchor:[0,0]});
+  labelMarkers[p.cod_comuna]=L.marker([p.cy,p.cx],{icon:icon,interactive:false,zIndexOffset:100});
+});
+function updateLabels(){
+  const z=map.getZoom(), claro=baseActual==="claro";
+  Object.entries(labelMarkers).forEach(([id,m])=>{
+    const f=GJ.features.find(x=>x.properties.cod_comuna==id);
+    const show=(JER[id]?z>=8:z>=9)&&pasaFiltro(f.properties);
+    if(show){m.addTo(labelGroup);} else {labelGroup.removeLayer(m);}
+    if(m._icon)m._icon.classList.toggle("oscuro",claro);
+  });
+}
+map.on("zoomend",updateLabels);
+
+/* ═════════ INFRAESTRUCTURA ═════════ */
+function infraMarker(i){
+  const ico=INFRA_ICO[i.tipo]||INFRA_ICO.puerto;
+  const icon=L.divIcon({html:'<div class="infra-ic'+(ico[0]?" "+ico[0]:"")+'">'+ico[1]+'</div>',className:"infra-marker",iconSize:[28,28],iconAnchor:[14,14]});
+  return L.marker([i.lat,i.lng],{icon:icon,zIndexOffset:500}).bindTooltip(i.n+'<span class="tip-sub">'+i.sub+'</span>',{direction:"top",offset:[0,-14],className:"infra-tip"});
+}
+const infraBase=L.layerGroup();  /* puertos y aeropuertos */
+const infraEner=L.layerGroup();  /* plantas y energía */
+INFRA.forEach(i=>{ (i.tipo==="puerto"||i.tipo==="aero"? infraBase:infraEner).addLayer(infraMarker(i)); });
+infraBase.addTo(map);
+
+/* ═════════ RED LOGÍSTICA ═════════ */
+const logGroup=L.layerGroup();
+const rutaLayers=[];
+RUTASLOG.forEach(r=>{
+  const col=LOG_COL[r.grupo];
+  L.polyline(r.coords,{color:"#0A192D",weight:(r.grupo==="long"?8:6),opacity:.55,lineCap:"round",lineJoin:"round"}).addTo(logGroup);
+  const opts={color:col,weight:(r.grupo==="long"?5:r.grupo==="trans"?4:3.5),opacity:.95,lineCap:"round",lineJoin:"round",className:REDUCIDO?"":"flujo-log"};
+  if(r.futuro){opts.dashArray="2 9";opts.weight=4;opts.className="";}
+  const pl=L.polyline(r.coords,opts).bindTooltip(r.nombre+'<span class="tip-sub">'+r.sub+'</span>',{sticky:true,className:"ruta-tip"}).addTo(logGroup);
+  rutaLayers.push(pl);
+});
+PUENTES.forEach(p=>{
+  const icon=L.divIcon({html:'<div class="log-mk-ic">🛣️</div>',className:"log-mk",iconSize:[26,26],iconAnchor:[13,13]});
+  L.marker([p.lat,p.lng],{icon:icon,zIndexOffset:700}).bindTooltip(p.n+'<span class="tip-sub">'+p.sub+'</span>',{direction:"top",offset:[0,-13],className:"ruta-tip"}).addTo(logGroup);
+});
+PASOS.forEach(p=>{
+  const icon=L.divIcon({html:'<div class="log-mk-ic paso">🚧</div>',className:"log-mk",iconSize:[26,26],iconAnchor:[13,13]});
+  L.marker([p.lat,p.lng],{icon:icon,zIndexOffset:700}).bindTooltip(p.n+'<span class="tip-sub">'+p.sub+'</span>',{direction:"top",offset:[0,-13],className:"ruta-tip"}).addTo(logGroup);
+});
+
+/* ═════════ CAPA TURISMO ═════════ */
+const turGroup=L.layerGroup();
+const rutasTurLayers={};
+RUTASTUR.forEach(r=>{
+  L.polyline(r.coords,{color:"#fff",weight:7,opacity:.5,lineCap:"round",lineJoin:"round"}).addTo(turGroup);
+  const pl=L.polyline(r.coords,{color:r.c,weight:4.5,opacity:.95,lineCap:"round",lineJoin:"round",className:REDUCIDO?"":"flujo-tur"})
+    .bindTooltip(r.n+'<span class="tip-sub">'+r.sub+'</span>',{sticky:true,className:"ruta-tip"}).addTo(turGroup);
+  rutasTurLayers[r.id]=pl;
+});
+TURPOIS.forEach(p=>{
+  const emo={museo:"🖼️",parque:"🌲",playa:"🏖️",natural:"💦"}[p.t];
+  const icon=L.divIcon({html:'<div class="tur-ic '+p.t+'">'+emo+'</div>',className:"tur-mk",iconSize:[26,26],iconAnchor:[13,13]});
+  L.marker([p.lat,p.lng],{icon:icon,zIndexOffset:600}).bindTooltip(p.n+'<span class="tip-sub">'+TURPOI_N[p.t]+' · '+p.sub+'</span>',{direction:"top",offset:[0,-13],className:"infra-tip"}).addTo(turGroup);
+});
+
+/* ═════════ CHIPS CONTEXTUALES ═════════ */
+const filsEl=document.getElementById("fils");
+function renderChips(){
+  let h="";
+  if(modo==="comunas"){
+    h+='<button class="fb'+(aF==="all"?" on":"")+'" data-f="all" style="--fc:#2A8DC8">Todas <span id="cnt" style="background:rgba(255,255,255,.25);padding:0 5px;border-radius:8px">'+GJ.features.length+'</span></button>';
+    h+='<button class="fb'+(aF==="turismo"?" on":"")+'" data-f="turismo" style="--fc:#3B6D11">🌿 Turismo</button>';
+    h+='<button class="fb'+(aF==="industria"?" on":"")+'" data-f="industria" style="--fc:#854F0B">🏭 Industria</button>';
+    h+='<button class="fb'+(aF==="pesca"?" on":"")+'" data-f="pesca" style="--fc:#0F6E56">🐠 Pesca</button>';
+    h+='<button class="fb'+(aF==="logistica"?" on":"")+'" data-f="logistica" style="--fc:#534AB7">⚓ Logística</button>';
+    h+='<button class="fb'+(aF==="forestal"?" on":"")+'" data-f="forestal" style="--fc:#5F5E5A">🌲 Forestal</button>';
+  }else if(modo==="turismo"){
+    for(const [k,c] of Object.entries(TCATS)){
+      h+='<button class="fb'+(aFT===k?" on":"")+'" data-t="'+k+'" style="--fc:#3B6D11">'+c.e+' '+c.n.split(" ")[0]+'</button>';
+    }
+  }else{
+    h+='<span style="font-size:11px;color:var(--mu)">Pasa el cursor por rutas y nodos · haz clic en la lista para hacer zoom</span>';
+  }
+  filsEl.innerHTML=h;
+  filsEl.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{aF=b.dataset.f;renderChips();refresh();renderList();});
+  filsEl.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{aFT=(aFT===b.dataset.t)?null:b.dataset.t;renderChips();refresh();renderList();});
+}
+
+/* ═════════ LEYENDA CONTEXTUAL ═════════ */
+function renderLeg(){
+  const el=document.getElementById("legC");
+  let h="";
+  if(modo!=="logistica"){
+    h+='<div class="lt">Provincia</div>';
+    h+='<div class="lr"><div class="ld" style="background:#F5DFA0;border:1px solid #A36800"></div>Concepción</div>';
+    h+='<div class="lr"><div class="ld" style="background:#C5E0BF;border:1px solid #2E6B24"></div>Arauco</div>';
+    h+='<div class="lr"><div class="ld" style="background:#F5C88A;border:1px solid #8C4200"></div>Biobío interior</div>';
+  }
+  if(modo==="comunas"){
+    h+='<div class="lt">Categoría económica</div>';
+    for(const [k,v] of Object.entries(CC)) h+='<div class="lr"><div class="ld" style="background:'+v+'"></div>'+CL[k]+'</div>';
+    h+='<div class="lt">Nodos</div><div class="lr">⚓ Puerto</div><div class="lr">✈️ Aeropuerto</div>';
+  }
+  if(modo==="turismo"){
+    h+='<div class="lt">Rutas turísticas</div>';
+    RUTASTUR.forEach(r=>h+='<div class="lr"><div class="ld" style="background:'+r.c+';height:4px;border-radius:2px"></div>'+r.n+'</div>');
+    h+='<div class="lt">Hitos</div><div class="lr">🖼️ Museo</div><div class="lr">🌲 Área protegida</div><div class="lr">🏖️ Playa / caleta</div><div class="lr">💦 Hito natural</div>';
+  }
+  if(modo==="logistica"){
+    h+='<div class="lt">Ejes de carga</div>';
+    h+='<div class="lr"><div class="ld" style="background:#1A4D7A;height:4px"></div>Longitudinales N–S</div>';
+    h+='<div class="lr"><div class="ld" style="background:#D97706;height:4px"></div>Corredores transversales</div>';
+    h+='<div class="lr"><div class="ld" style="background:#7C3AED;height:4px"></div>Red interportuaria</div>';
+    h+='<div class="lt">Nodos</div><div class="lr">⚓ Puerto</div><div class="lr">✈️ Aeropuerto</div><div class="lr">🛣️ Puente Biobío</div><div class="lr">🚧 Paso fronterizo</div>';
+    h+='<div class="lt">Energía e industria</div><div class="lr">🏭 Planta forestal</div><div class="lr">💧 Hidroeléctrica</div><div class="lr">☀️ Solar</div><div class="lr">💨 Eólico</div>';
+  }
+  h+='<div class="lnote">Límites y trazados esquemáticos, de carácter referencial, sin validez legal.</div>';
+  el.innerHTML=h;
+}
+
+/* ═════════ PANELES ═════════ */
+function setPanelHead(){
+  const t=document.getElementById("pTit"), s=document.getElementById("psub");
+  if(modo==="comunas"){t.innerHTML='Comunas <span class="bdg" id="lb">33</span>';s.textContent="Haz clic en una comuna del mapa o de la lista para abrir su perfil completo.";}
+  if(modo==="turismo"){t.innerHTML='Turismo y Patrimonio <span class="bdg" id="lb"></span>';s.textContent="Rutas temáticas animadas, museos, parques y playas. Filtra por categoría o abre la ficha de una comuna.";}
+  if(modo==="logistica"){t.innerHTML='Red Logística y Energía';s.textContent="Ejes de carga, puentes sobre el Biobío, paso fronterizo e infraestructura energética.";}
+}
+function renderList(){
+  const list=document.getElementById("cls");
+  document.getElementById("fic").classList.remove("vis");
+  document.getElementById("turpanel").classList.toggle("vis",modo==="turismo"&&!selId);
+  document.getElementById("logpanel").classList.toggle("vis",modo==="logistica"&&!selId);
+  list.style.display=(modo==="comunas"&&!selId)?"flex":"none";
+  if(modo!=="comunas")return;
+  list.innerHTML="";let n=0;
+  GJ.features.slice().sort((a,b)=>a.properties.Comuna.localeCompare(b.properties.Comuna)).forEach((feat,ix)=>{
+    const p=feat.properties;
+    if(!pasaFiltro(p))return;
+    n++;
+    const cats=p.cat||[];
+    const d=document.createElement("div");
+    d.className="ci"+(selId===p.cod_comuna?" sel":"");
+    d.style.animationDelay=(Math.min(ix*18,300))+"ms";
+    d.innerHTML='<div class="cdot" style="background:'+catColor(cats)+'"></div><div class="cin"><div class="cna">'+p.Comuna+'</div><div class="cpr">'+p.Provincia+(JER[p.cod_comuna]?' · '+JER[p.cod_comuna]:'')+'</div></div><div class="ctg">'+(CL[cats[0]]||"")+'</div>';
+    d.onclick=()=>seleccionar(p.cod_comuna);
+    list.appendChild(d);
+  });
+  const lb=document.getElementById("lb"); if(lb)lb.textContent=n;
+  if(!n)list.innerHTML='<div class="nor">Sin comunas para este filtro.<br>Prueba con otra categoría o provincia.</div>';
+}
+
+function renderTurPanel(){
+  const el=document.getElementById("turpanel");
+  let h='<div class="log-intro">Cinco rutas temáticas recorren la región — haz clic para volar sobre cada una. Los puntos del mapa son museos, áreas silvestres protegidas, playas e hitos naturales.</div>';
+  h+='<div class="log-cat"><div class="log-cat-h"><span class="log-cat-bar" style="background:#3B6D11"></span>Rutas turísticas</div>';
+  RUTASTUR.forEach((r,i)=>{
+    h+='<div class="log-item" onclick="zoomRutaTur('+i+')" style="animation-delay:'+(i*50)+'ms"><div class="log-line" style="color:'+r.c+'"><i style="background:'+r.c+'"></i></div><div class="log-tx"><div class="log-nm">'+r.n+'</div><div class="log-ds">'+r.sub+'</div></div></div>';
+  });
+  h+='</div><div class="log-cat"><div class="log-cat-h"><span class="log-cat-bar" style="background:#5B4E8C"></span>Hitos del mapa</div>';
+  TURPOIS.forEach((p,i)=>{
+    const emo={museo:"🖼️",parque:"🌲",playa:"🏖️",natural:"💦"}[p.t];
+    h+='<div class="log-item" onclick="zoomPunto('+p.lat+','+p.lng+')" style="animation-delay:'+(i*30)+'ms"><div class="log-ico">'+emo+'</div><div class="log-tx"><div class="log-nm">'+p.n+'</div><div class="log-ds">'+TURPOI_N[p.t]+' · '+p.sub+'</div></div></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
+function renderLogPanel(){
+  const el=document.getElementById("logpanel");
+  const cats=[
+    {t:"Rutas longitudinales (N-S)",col:LOG_COL.long,items:RUTASLOG.filter(r=>r.grupo==="long")},
+    {t:"Corredores transversales",col:LOG_COL.trans,items:RUTASLOG.filter(r=>r.grupo==="trans")},
+    {t:"Red interportuaria y urbana",col:LOG_COL.inter,items:RUTASLOG.filter(r=>r.grupo==="inter")}
+  ];
+  let h='<div class="log-intro">El Biobío articula el mayor sistema logístico del centro-sur de Chile. Carga regional 2024–25: <b>26,2 Mt</b> movilizadas (+1,7%) · <b>131.708 TEU</b> (+16,8%). Pasa el cursor sobre el mapa para el detalle de cada elemento.</div>';
+  cats.forEach(c=>{
+    h+='<div class="log-cat"><div class="log-cat-h"><span class="log-cat-bar" style="background:'+c.col+'"></span>'+c.t+'</div>';
+    c.items.forEach(r=>{
+      const idx=RUTASLOG.indexOf(r);
+      const badge=r.badge?'<span class="log-badge fut">'+r.badge+'</span>':"";
+      h+='<div class="log-item" onclick="zoomRuta('+idx+')"><div class="log-line" style="color:'+c.col+'"><i style="background:'+(r.futuro?"transparent":c.col)+';border-top:'+(r.futuro?'3px dashed '+c.col:'none')+'"></i></div><div class="log-tx"><div class="log-nm">'+r.nombre+'</div><div class="log-ds">'+r.sub+'</div>'+badge+'</div></div>';
+    });
+    h+='</div>';
+  });
+  h+='<div class="log-cat"><div class="log-cat-h"><span class="log-cat-bar" style="background:#7C3AED"></span>Puentes estratégicos · Río Biobío</div>';
+  PUENTES.forEach(p=>{
+    const badge=p.badge?'<span class="log-badge '+(p.badgeClass||"fut")+'">'+p.badge+'</span>':"";
+    h+='<div class="log-item" onclick="zoomPunto('+p.lat+','+p.lng+')"><div class="log-ico">🛣️</div><div class="log-tx"><div class="log-nm">'+p.n+'</div><div class="log-ds">'+p.sub+'</div>'+badge+'</div></div>';
+  });
+  h+='</div><div class="log-cat"><div class="log-cat-h"><span class="log-cat-bar" style="background:#B23838"></span>Paso fronterizo</div>';
+  PASOS.forEach(p=>{
+    const badge=p.badge?'<span class="log-badge obra">'+p.badge+'</span>':"";
+    h+='<div class="log-item" onclick="zoomPunto('+p.lat+','+p.lng+')"><div class="log-ico">🚧</div><div class="log-tx"><div class="log-nm">'+p.n+'</div><div class="log-ds">'+p.sub+'</div>'+badge+'</div></div>';
+  });
+  h+='</div><div class="log-cat"><div class="log-cat-h"><span class="log-cat-bar" style="background:#0F766E"></span>Energía e industria</div>';
+  INFRA.filter(i=>!["puerto","aero"].includes(i.tipo)).forEach(i=>{
+    const ico=INFRA_ICO[i.tipo][1];
+    h+='<div class="log-item" onclick="zoomPunto('+i.lat+','+i.lng+')"><div class="log-ico">'+ico+'</div><div class="log-tx"><div class="log-nm">'+i.n+'</div><div class="log-ds">'+i.sub+'</div></div></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
+window.zoomRuta=i=>{const r=RUTASLOG[i];if(r)map.flyToBounds(L.polyline(r.coords).getBounds(),{padding:[50,50],duration:REDUCIDO?0:.9});};
+window.zoomRutaTur=i=>{const r=RUTASTUR[i];if(r)map.flyToBounds(L.polyline(r.coords).getBounds(),{padding:[60,60],duration:REDUCIDO?0:.9});};
+window.zoomPunto=(lat,lng)=>{map.flyTo([lat,lng],11,{duration:REDUCIDO?0:.7});};
+
+/* ═════════ FICHA COMUNAL ═════════ */
+function muniURL(nombre){const k=nombre.toLowerCase().replace(/[áàä]/g,"a").replace(/[éèë]/g,"e").replace(/[íìï]/g,"i").replace(/[óòö]/g,"o").replace(/[úùü]/g,"u").replace(/ñ/g,"n").trim();return MUNI[k]||"";}
+function infraDeComuna(layer){
+  const b=layer.getBounds();
+  const dentro=x=>b.contains(L.latLng(x.lat,x.lng));
+  return {infra:INFRA.filter(dentro), tur:TURPOIS.filter(dentro)};
+}
+function seleccionar(id){
+  selId=id; refresh(); updateLabels();
+  const feat=GJ.features.find(f=>f.properties.cod_comuna===id); if(!feat)return;
+  const layer=lyrs[id];
+  map.flyToBounds(layer.getBounds(),{padding:[50,50],duration:REDUCIDO?0:.7});
+  layer.bringToFront();
+  showFicha(feat,layer);
+}
+function showFicha(feat,layer){
+  const p=feat.properties, pc=PC[p.Provincia]||PC["Concepción"];
+  const cats=p.cat||[];
+  const cH=cats.map(c=>'<span class="fc">'+(CL[c]||c)+'</span>').join("");
+  const kpis=KPIS[p.Comuna]||[];
+  const kH=kpis.map((k,i)=>'<div class="kc" style="animation-delay:'+(i*70)+'ms"><div class="kv">'+k.v+'</div><div class="kl">'+k.l+'</div></div>').join("");
+  const atr=TUR[p.cod_comuna]||[];
+  const aH=atr.map((a,i)=>'<li style="animation-delay:'+(i*60)+'ms"><span class="aic">'+TCATS[a.c].e+'</span><span>'+a.n+'</span></li>').join("");
+  const rutas=RUTASTUR.filter(r=>r.coords.some(c=>layer.getBounds().contains(L.latLng(c[0],c[1]))));
+  const rH=rutas.map(r=>'<span class="rchip" style="border-color:'+r.c+';color:'+r.c+'" onclick="zoomRutaTur('+RUTASTUR.indexOf(r)+')"><i></i>'+r.n+'</span>').join("");
+  const {infra,tur}=infraDeComuna(layer);
+  const iH=infra.map(i=>'<li><span class="aic">'+INFRA_ICO[i.tipo][1]+'</span><span><b>'+i.n+'</b> · '+i.sub+'</span></li>').join("");
+  const url=muniURL(p.Comuna);
+  const host=url?url.replace(/^https?:\/\//,"").replace(/\/$/,""):"";
+  const fic=document.getElementById("fic");
+  document.getElementById("cls").style.display="none";
+  document.getElementById("turpanel").classList.remove("vis");
+  document.getElementById("logpanel").classList.remove("vis");
+  fic.innerHTML=
+    '<button class="bbk" onclick="goBack()">← Volver a la lista</button>'+
+    '<div class="fh" style="background:linear-gradient(135deg,'+pc.d+','+pc.b+')">'+
+      '<div class="fn">'+p.Comuna+'</div>'+
+      '<div class="fj">'+(JER[p.cod_comuna]||'○ Comuna')+' · Provincia de '+p.Provincia+'</div>'+
+      '<div class="fca">'+cH+'</div>'+
+    '</div>'+
+    (url?'<a class="fweb" href="'+url+'" target="_blank" rel="noopener"><span>🌐 Sitio municipal</span><span class="fweb-host">'+host+'</span></a>':'')+
+    '<div class="fs"><div class="fst">Perfil</div><p>'+p.desc+'</p></div>'+
+    '<div class="fs"><div class="fst">Oportunidades de inversión</div><p>'+p.inv+'</p></div>'+
+    (kH?'<div class="fs"><div class="fst">Datos clave</div><div class="kg">'+kH+'</div></div>':'')+
+    (aH?'<div class="fs"><div class="fst">Atractivos turísticos</div><ul class="atrL">'+aH+'</ul></div>':'')+
+    (rH?'<div class="fs"><div class="fst">Rutas turísticas que la recorren</div><div>'+rH+'</div></div>':'')+
+    (iH?'<div class="fs"><div class="fst">Infraestructura y logística</div><ul class="atrL">'+iH+'</ul></div>':'');
+  fic.classList.add("vis");
+  document.querySelector(".pb2").scrollTop=0;
+}
+window.goBack=function(){selId=null;document.getElementById("fic").classList.remove("vis");refresh();updateLabels();renderList();};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&selId)goBack();});
+
+/* ═════════ MODOS ═════════ */
+document.querySelectorAll(".modo").forEach(b=>{
+  b.onclick=function(){
+    modo=this.dataset.m; selId=null; aF="all"; aFT=null;
+    document.querySelectorAll(".modo").forEach(x=>x.classList.toggle("on",x===this));
+    if(modo==="logistica"){logGroup.addTo(map);infraEner.addTo(map);map.removeLayer(turGroup);}
+    else if(modo==="turismo"){turGroup.addTo(map);map.removeLayer(logGroup);map.removeLayer(infraEner);}
+    else{map.removeLayer(logGroup);map.removeLayer(turGroup);map.removeLayer(infraEner);}
+    renderChips();renderLeg();setPanelHead();refresh();updateLabels();renderList();
+    map.flyToBounds(BOUNDS,{padding:[24,24],duration:REDUCIDO?0:.8});
+  };
+});
+
+/* ═════════ FILTROS GLOBALES ═════════ */
+function refresh(){gjL.eachLayer(l=>l.setStyle(sty(l.feature,false)));updateLabels();}
+document.querySelectorAll(".pb[data-p]").forEach(b=>{b.onclick=function(){
+  document.querySelectorAll(".pb[data-p]").forEach(x=>x.classList.remove("on"));this.classList.add("on");
+  aP=this.dataset.p;refresh();renderList();
+  if(aP!=="all"){
+    const feats=GJ.features.filter(f=>f.properties.Provincia===aP);
+    if(feats.length)map.flyToBounds(L.geoJSON({type:"FeatureCollection",features:feats}).getBounds(),{padding:[30,30],duration:REDUCIDO?0:.8});
+  }else map.flyToBounds(BOUNDS,{padding:[24,24],duration:REDUCIDO?0:.8});
+};});
+document.getElementById("si").oninput=function(){
+  aS=this.value;refresh();renderList();
+  if(aS){
+    const m=GJ.features.find(f=>f.properties.Comuna.toLowerCase().includes(aS.toLowerCase()));
+    if(m){const ly=lyrs[m.properties.cod_comuna];if(ly)map.flyToBounds(ly.getBounds(),{padding:[80,80],duration:REDUCIDO?0:.6});}
+  }
+};
+document.getElementById("si").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&aS){const m=GJ.features.find(f=>f.properties.Comuna.toLowerCase().includes(aS.toLowerCase()));if(m)seleccionar(m.properties.cod_comuna);}
+});
+{const dl=document.getElementById("dl");GJ.features.slice().sort((a,b)=>a.properties.Comuna.localeCompare(b.properties.Comuna)).forEach(f=>{const o=document.createElement("option");o.value=f.properties.Comuna;dl.appendChild(o);});}
+
+/* basemap y reset */
+document.getElementById("btnBase").onclick=function(){
+  if(baseActual==="sat"){map.removeLayer(baseSat);baseClaro.addTo(map);baseActual="claro";this.textContent="🗺️";}
+  else{map.removeLayer(baseClaro);baseSat.addTo(map);baseActual="sat";this.textContent="🛰️";}
+  baseActual==="sat"?null:null; updateLabels();
+};
+document.getElementById("btnReset").onclick=function(){
+  selId=null;aF="all";aFT=null;aP="all";aS="";document.getElementById("si").value="";
+  document.querySelectorAll(".pb[data-p]").forEach(x=>x.classList.toggle("on",x.dataset.p==="all"));
+  renderChips();refresh();renderList();
+  map.flyToBounds(BOUNDS,{padding:[24,24],duration:REDUCIDO?0:.8});
+};
+
+/* hint */
+window.cerrarHint=function(){const h=document.getElementById("hint");if(h){h.classList.add("bye");setTimeout(()=>h.remove(),420);}};
+setTimeout(cerrarHint,9000);
+map.once("click",cerrarHint);
+
+/* contadores */
+document.querySelectorAll(".hst b").forEach(el=>{
+  const n=+el.dataset.n; if(REDUCIDO){el.textContent=n;return;}
+  let v=0; const paso=Math.max(1,Math.round(n/28));
+  const t=setInterval(()=>{v+=paso;if(v>=n){v=n;clearInterval(t);}el.textContent=v;},40);
+});
+
+/* init */
+renderChips();renderLeg();setPanelHead();renderTurPanel();renderLogPanel();renderList();updateLabels();
+</script>
+</body>
+</html>
