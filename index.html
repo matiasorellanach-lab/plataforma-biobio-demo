@@ -2855,13 +2855,13 @@ section { scroll-margin-top: 80px; }
       </div>
 
       <div class="pf-filtros fade-up" id="pfFiltros">
-        <button class="pf-chip activo" data-f="todos">Todos <span class="n">78</span></button>
+        <button class="pf-chip activo" data-f="todos">Todos <span class="n">80</span></button>
         <button class="pf-chip" data-f="servicios">Servicios Globales <span class="n">6</span></button>
         <button class="pf-chip" data-f="logistica">Logística <span class="n">20</span></button>
         <button class="pf-chip" data-f="infraestructura">Infraestructura <span class="n">6</span></button>
         <button class="pf-chip" data-f="energia">Energía <span class="n">13</span></button>
         <button class="pf-chip" data-f="forestal">Forestal <span class="n">4</span></button>
-        <button class="pf-chip" data-f="agroindustria">Agroindustria <span class="n">2</span></button>
+        <button class="pf-chip" data-f="agroindustria">Agroindustria <span class="n">4</span></button>
         <button class="pf-chip" data-f="pesca">Pesca <span class="n">10</span></button>
         <button class="pf-chip" data-f="industrial">Industrial y Manufacturero <span class="n">17</span></button>
       </div>
@@ -2918,6 +2918,8 @@ section { scroll-margin-top: 80px; }
         <article class="pf-tile" data-sector="forestal"><div class="pf-logo">Ma</div><div class="pf-info"><div class="pf-name">Masisa</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/cl.png" alt=""> Chile</div><div class="pf-ttag">Forestal</div></div><span class="pf-demo">Por validar</span></article>
         <article class="pf-tile" data-sector="agroindustria"><div class="pf-logo">Ne</div><div class="pf-info"><div class="pf-name">Nestlé</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/ch.png" alt=""> Suiza</div><div class="pf-ttag">Agroindustria</div></div><span class="pf-demo">Por validar</span></article>
         <article class="pf-tile" data-sector="agroindustria"><div class="pf-logo">MT</div><div class="pf-info"><div class="pf-name">Miguel Torres</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/es.png" alt=""> España</div><div class="pf-ttag">Agroindustria</div></div><span class="pf-demo">Por validar</span></article>
+        <article class="pf-tile" data-sector="agroindustria"><div class="pf-logo">AC</div><div class="pf-info"><div class="pf-name">Agrícola Cholguahue SpA</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/cl.png" alt=""> Chile</div><div class="pf-ttag">Agroindustria</div></div><span class="pf-demo">Por validar</span></article>
+        <article class="pf-tile" data-sector="agroindustria"><div class="pf-logo">EM</div><div class="pf-info"><div class="pf-name">Empresas Monteverde</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/cl.png" alt=""> Chile</div><div class="pf-ttag">Agroindustria</div></div><span class="pf-demo">Por validar</span></article>
         <article class="pf-tile" data-sector="pesca"><div class="pf-logo">AL</div><div class="pf-info"><div class="pf-name">ALIMAR</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/cl.png" alt=""> Chile</div><div class="pf-ttag">Pesca</div></div><span class="pf-demo">Por validar</span></article>
         <article class="pf-tile" data-sector="pesca"><div class="pf-logo">NU</div><div class="pf-info"><div class="pf-name">NUTRISCO</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/cl.png" alt=""> Chile</div><div class="pf-ttag">Pesca</div></div><span class="pf-demo">Por validar</span></article>
         <article class="pf-tile" data-sector="pesca"><div class="pf-logo">LP</div><div class="pf-info"><div class="pf-name">Lota Protein</div><div class="pf-pais"><img class="pf-flag" loading="lazy" decoding="async" src="https://flagcdn.com/w40/cl.png" alt=""> Chile</div><div class="pf-ttag">Pesca</div></div><span class="pf-demo">Por validar</span></article>
@@ -4244,11 +4246,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('SW registrado:', reg.scope))
-      .catch(err => console.log('SW error:', err));
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .then(reg => console.log("SW registrado:", reg.scope))
+      .catch(err => console.log("SW error:", err));
   });
 }
 </script>
