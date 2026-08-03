@@ -1387,6 +1387,160 @@ section { scroll-margin-top: 80px; }
 .delay-1{ transition-delay: .08s; }
 .delay-2{ transition-delay: .16s; }
 .delay-3{ transition-delay: .24s; }
+
+/* ── NOTICIAS CAROUSEL ── */
+.news-section{
+  position:relative; padding:0 0 60px; overflow:hidden;
+  background:linear-gradient(180deg,var(--gris-fondo) 0%,#EDF1F5 100%);
+}
+.news-header{
+  position:relative; text-align:center;
+  padding:64px 24px 90px; overflow:hidden;
+}
+.news-header::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(160deg,var(--azul-noche) 0%,#153A5E 45%,var(--azul-corp) 100%);
+  clip-path:ellipse(90% 100% at 50% 0%); z-index:0;
+}
+.news-header::after{
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 20% 80%,rgba(122,182,72,.08),transparent 50%),
+             radial-gradient(circle at 80% 20%,rgba(42,141,200,.12),transparent 50%);
+  z-index:1;
+}
+.news-header>*{ position:relative; z-index:2; }
+.news-eye-row{ display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:16px; }
+.news-line{ display:block; width:32px; height:2px; background:var(--verde-corp); border-radius:2px; }
+.news-eye{
+  font-family:var(--sans); font-size:.75rem; letter-spacing:4px;
+  text-transform:uppercase; color:var(--verde-corp); font-weight:500;
+}
+.news-title{
+  font-family:var(--serif); font-weight:700; font-size:clamp(2rem,4vw,3.2rem);
+  color:#fff; line-height:1.1; margin:0 0 14px;
+}
+.news-lead{
+  font-weight:300; font-size:1.05rem; color:rgba(255,255,255,.7);
+  max-width:520px; margin:0 auto; line-height:1.65;
+}
+.news-carousel-wrap{
+  max-width:var(--maxw); margin:-40px auto 0; padding:0 32px;
+  position:relative; z-index:5;
+}
+.news-viewport{ overflow:hidden; border-radius:4px; }
+.news-track{
+  display:flex; gap:1.5vw;
+  transition:transform .6s cubic-bezier(.25,.46,.45,.94);
+}
+.news-card{
+  flex:0 0 33.333%; background:#fff; border-radius:16px;
+  box-shadow:0 6px 28px rgba(14,42,74,.1); overflow:hidden;
+  text-decoration:none; color:var(--azul-noche);
+  display:flex; flex-direction:column;
+  transition:transform .4s ease, box-shadow .4s ease;
+}
+.news-card:hover{
+  transform:translateY(-6px) scale(1.015);
+  box-shadow:0 16px 44px rgba(14,42,74,.18);
+}
+.news-card-img{
+  position:relative; height:210px; overflow:hidden; background:#e8ecf1;
+}
+.news-card-img img{
+  width:100%; height:100%; object-fit:cover;
+  opacity:0; transition:opacity .5s ease;
+}
+.news-card-img img.loaded{ opacity:1; }
+.news-card-img .news-shimmer{
+  position:absolute; inset:0;
+  background:linear-gradient(90deg,#e8ecf1 25%,#f3f6f9 50%,#e8ecf1 75%);
+  background-size:200% 100%; animation:newsShimmer 1.5s infinite;
+}
+@keyframes newsShimmer{ 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+.news-card-img .news-fallback{
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; color:rgba(255,255,255,.6);
+}
+.news-tag{
+  position:absolute; top:12px; left:12px;
+  font-family:var(--sans); font-size:.65rem; font-weight:600;
+  letter-spacing:1.5px; text-transform:uppercase;
+  color:#fff; padding:4px 10px; border-radius:6px;
+}
+.news-date{
+  position:absolute; bottom:12px; left:12px;
+  font-family:var(--sans); font-size:.7rem; font-weight:500;
+  letter-spacing:1px; background:rgba(14,42,74,.85);
+  backdrop-filter:blur(6px); color:#fff;
+  padding:5px 12px; border-radius:6px;
+  display:flex; align-items:center; gap:7px;
+}
+.news-date::before{
+  content:''; width:5px; height:5px; background:var(--verde-corp);
+  border-radius:50%; display:inline-block;
+}
+.news-card-body{
+  padding:20px 20px 24px; flex:1;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.news-card-body p{
+  font-size:.92rem; line-height:1.65; color:var(--azul-noche);
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical;
+  overflow:hidden; margin:0 0 16px;
+}
+.news-read-more{
+  font-family:var(--sans); font-size:.73rem; font-weight:600;
+  letter-spacing:1.5px; text-transform:uppercase; color:var(--azul-corp);
+  display:inline-flex; align-items:center; gap:8px;
+}
+.news-controls{
+  display:flex; align-items:center; justify-content:center;
+  gap:20px; margin-top:28px;
+}
+.news-arr{
+  width:46px; height:46px; border-radius:50%;
+  border:2px solid var(--azul-corp); background:transparent;
+  color:var(--azul-corp); display:flex; align-items:center;
+  justify-content:center; cursor:pointer; transition:all .3s;
+}
+.news-arr:hover{ background:var(--azul-corp); color:#fff; }
+.news-dots{ display:flex; gap:8px; }
+.news-dot{
+  width:10px; height:10px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(42,141,200,.25); transition:all .35s ease;
+}
+.news-dot.active{ width:32px; border-radius:6px; background:var(--azul-corp); }
+.news-progress-bar{
+  max-width:400px; margin:16px auto 0; height:3px;
+  background:rgba(42,141,200,.12); border-radius:3px; overflow:hidden;
+}
+.news-progress-fill{
+  height:100%; width:0; border-radius:3px;
+  background:linear-gradient(90deg,var(--azul-corp),var(--verde-corp));
+  transition:width 40ms linear;
+}
+.news-paused-label{
+  text-align:center; font-family:var(--sans); font-size:.65rem;
+  color:#94a3b8; letter-spacing:2px; margin-top:10px;
+  text-transform:uppercase; display:none;
+}
+.news-paused-label.show{ display:block; }
+.news-footer-link{ text-align:center; padding:40px 24px 0; }
+.news-all-btn{
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--sans); font-size:.76rem; letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--azul-corp); text-decoration:none;
+  padding:12px 28px; border:1.5px solid rgba(42,141,200,.3);
+  border-radius:40px; transition:all .3s;
+}
+.news-all-btn:hover{ background:var(--azul-corp); color:#fff; border-color:var(--azul-corp); }
+@media(max-width:768px){
+  .news-carousel-wrap{ padding:0 16px; }
+  .news-track{ gap:4vw; }
+  .news-card{ flex:0 0 88%; }
+  .news-card-img{ height:190px; }
+  .news-header{ padding:48px 20px 80px; }
+}
 </style>
 </head>
 <body>
@@ -3118,6 +3272,45 @@ section { scroll-margin-top: 80px; }
   </div>
 </section>
 
+<!-- ══════════ NOTICIAS CDBB ══════════ -->
+<section class="news-section" id="noticias">
+  <div class="news-header fade-up">
+    <div class="news-eye-row">
+      <span class="news-line"></span>
+      <span class="news-eye">Noticias</span>
+      <span class="news-line"></span>
+    </div>
+    <h2 class="news-title">Corporación Desarrolla Biobío</h2>
+    <p class="news-lead">Iniciativas, proyectos y actividades que impulsan el desarrollo sostenible de la Región del Biobío.</p>
+  </div>
+
+  <div class="news-carousel-wrap" id="newsCarousel">
+    <div class="news-viewport">
+      <div class="news-track" id="newsTrack"></div>
+    </div>
+
+    <div class="news-controls">
+      <button class="news-arr" id="newsPrev" aria-label="Anterior">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4l-6 6 6 6"/></svg>
+      </button>
+      <div class="news-dots" id="newsDots"></div>
+      <button class="news-arr" id="newsNext" aria-label="Siguiente">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="news-progress-bar"><div class="news-progress-fill" id="newsProg"></div></div>
+    <p class="news-paused-label" id="newsPausedLabel">⏸ pausado</p>
+  </div>
+
+  <div class="news-footer-link fade-up">
+    <a href="https://desarrollabiobio.cl/noticias/" target="_blank" rel="noopener noreferrer" class="news-all-btn">
+      Ver todas las noticias
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h8M9 4l4 4-4 4"/></svg>
+    </a>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer class="footer" id="contacto">
   <div class="footer-in">
@@ -3915,6 +4108,134 @@ function pqAbrirPerfil(nombre) {
   `;
   panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
+
+/* ── CARRUSEL NOTICIAS ──────────────────────────────────── */
+(function(){
+  const NEWS = [
+    {date:"28 Jul 2026",excerpt:"La Estrategia Biobío 2050 continúa avanzando en su proceso de construcción participativa. Representantes del sector logístico dieron inicio a la tercera ronda de trabajo para consolidar su hoja de ruta.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/f367495c-ebc6-4c11-8ed5-d360a290c033-1024x768.jpg",url:"https://desarrollabiobio.cl/estrategia-biobio-2050-inicia-tercera-ronda-de-trabajo-con-el-sector-logistico-para-consolidar-su-hoja-de-ruta/",tag:"Biobío 2050"},
+    {date:"28 Jul 2026",excerpt:"Macarena Vera, gerente general de Desarrolla Biobío, participó en la presentación del plan «Juntos Reactivamos Biobío», iniciativa que busca generar 3 mil nuevos empleos en la región.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/1784731132471-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-participa-en-presentacion-del-plan-juntos-reactivamos-biobio-busca-generar-3-mil-nuevos-empleos/",tag:"Reactivación"},
+    {date:"13 Jul 2026",excerpt:"Desarrolla Biobío participó en el Summit Chile Impacta, instancia que reunió en Concepción a líderes industriales para construir una agenda común de desarrollo regional.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/fd590905-efca-496e-9baa-557917e2c6f6-1024x768.jpg",url:"https://desarrollabiobio.cl/chile-impacta-reunio-a-lideres-industriales-del-biobio-para-construir-una-agenda-comun-de-desarrollo/",tag:"Industria"},
+    {date:"09 Jul 2026",excerpt:"Desarrolla Biobío dio inicio a la segunda fase de la Estrategia Biobío 2050, un proceso colaborativo para consolidar los ejes de cada pilar de desarrollo regional.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/0007062b-1294-4095-9b7b-a2bb4677b14e-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-inicia-la-segunda-fase-de-la-estrategia-biobio-2050-para-consolidar-ejes-de-cada-pilar/",tag:"Biobío 2050"},
+    {date:"09 Jul 2026",excerpt:"Desarrolla Biobío fortalece vínculos con Indonesia para impulsar nuevas oportunidades de cooperación e inversión en la Región del Biobío.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/fbcccf61-acff-46d0-a47a-3c0de7a2a2c0-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-fortalece-vinculos-con-indonesia-para-impulsar-nuevas-oportunidades-de-cooperacion-e-inversion/",tag:"Internacional"},
+    {date:"06 Jul 2026",excerpt:"Desarrolla Biobío impulsó la elaboración de una Estrategia Regional de Internacionalización para fortalecer la posición competitiva de la región a nivel global.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/1782229398419-1.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-impulsa-estrategia-regional-de-internacionalizacion-para-competir-a-nivel-global/",tag:"Internacionalización"},
+    {date:"02 Jul 2026",excerpt:"Desarrolla Biobío participó de EREDE 2026, encuentro empresarial que reunió a autoridades y representantes del ecosistema industrial para atraer inversión extranjera.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/bad3668a-0d0b-4c38-a93d-8cbd2bd3a593-e1783021433135-1024x471.jpg",url:"https://desarrollabiobio.cl/erede-2026-expresidente-frei-se-convierte-en-socio-estrategico-del-biobio-para-atraer-inversion-extranjera/",tag:"Inversión"},
+    {date:"01 Jul 2026",excerpt:"Actores clave planifican el desarrollo de las ciudades del Biobío de cara al 2050. El potencial de la región es reconocido en todo Chile.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/IMG_4736-1024x768.jpg",url:"https://desarrollabiobio.cl/actores-planifican-desarrollo-de-las-ciudades-del-biobio-de-cara-al-2050-el-potencial-de-la-region-es-reconocido-en-todo-chile/",tag:"Ciudades"},
+    {date:"28 Jun 2026",excerpt:"Una delegación de la Secretaría de Estado de Educación, Investigación e Innovación Suiza (SERI) visitó la Región del Biobío para explorar oportunidades de inversión y colaboración tecnológica.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/06/7d252b71-f7b4-4f40-bea7-1f9b4388cd90-1024x768.jpg",url:"https://desarrollabiobio.cl/delegacion-suiza-explora-oportunidades-de-inversion-y-colaboracion-tecnologica-en-la-region-del-biobio/",tag:"Internacional"}
+  ];
+  const TAG_COLORS={"Biobío 2050":"#2A8DC8","Reactivación":"#E8853D","Industria":"#5B6ABF","Internacional":"#7AB648","Internacionalización":"#7AB648","Inversión":"#D4A843","Ciudades":"#C75B8E"};
+
+  const track=document.getElementById('newsTrack');
+  const dotsWrap=document.getElementById('newsDots');
+  const prog=document.getElementById('newsProg');
+  const pauseLabel=document.getElementById('newsPausedLabel');
+  const wrap=document.getElementById('newsCarousel');
+  if(!track) return;
+
+  let active=0, paused=false, isMobile=window.innerWidth<640;
+  const getVisible=()=>isMobile?1:3;
+  const getMax=()=>Math.max(0,NEWS.length-getVisible());
+
+  window.addEventListener('resize',()=>{
+    isMobile=window.innerWidth<640;
+    if(active>getMax()) active=getMax();
+    updateSlide();
+    buildDots();
+  });
+
+  NEWS.forEach((item,i)=>{
+    const tc=TAG_COLORS[item.tag]||'#2A8DC8';
+    const card=document.createElement('a');
+    card.className='news-card';
+    card.href=item.url; card.target='_blank'; card.rel='noopener noreferrer';
+    card.innerHTML=`
+      <div class="news-card-img" style="background:linear-gradient(135deg,#0E2A4A 0%,${tc} 100%)">
+        <div class="news-shimmer" data-shim="${i}"></div>
+        <img src="${item.img}" alt="" loading="lazy" data-idx="${i}">
+        <span class="news-tag" style="background:${tc}">${item.tag}</span>
+        <span class="news-date">${item.date}</span>
+      </div>
+      <div class="news-card-body">
+        <p>${item.excerpt}</p>
+        <span class="news-read-more">Leer más <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h8M9 4l4 4-4 4"/></svg></span>
+      </div>`;
+    track.appendChild(card);
+    const img=card.querySelector('img');
+    img.addEventListener('load',()=>{
+      img.classList.add('loaded');
+      const shim=card.querySelector('[data-shim]');
+      if(shim) shim.remove();
+    });
+    img.addEventListener('error',()=>{
+      img.remove();
+      const shim=card.querySelector('[data-shim]');
+      if(shim) shim.remove();
+      const imgWrap=card.querySelector('.news-card-img');
+      imgWrap.innerHTML+=`<div class="news-fallback"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg><span style="font-size:.65rem;margin-top:8px;letter-spacing:1px">FOTO NO DISPONIBLE</span></div>`;
+      const tag=document.createElement('span');
+      tag.className='news-tag'; tag.style.background=tc; tag.textContent=item.tag;
+      imgWrap.appendChild(tag);
+      const dt=document.createElement('span');
+      dt.className='news-date'; dt.textContent=item.date;
+      imgWrap.appendChild(dt);
+    });
+  });
+
+  function updateSlide(){
+    const cw=isMobile?88:33.333;
+    const gp=isMobile?4:1.5;
+    track.style.transform=`translateX(calc(-${active} * (${cw}% + ${gp}vw)))`;
+  }
+
+  function buildDots(){
+    dotsWrap.innerHTML='';
+    const mx=getMax();
+    for(let i=0;i<=mx;i++){
+      const d=document.createElement('button');
+      d.className='news-dot'+(i===active?' active':'');
+      d.setAttribute('aria-label','Ir a grupo '+(i+1));
+      d.addEventListener('click',()=>{ active=i; progress=0; updateSlide(); buildDots(); resetAuto(); });
+      dotsWrap.appendChild(d);
+    }
+  }
+
+  function goNext(){ active=active>=getMax()?0:active+1; progress=0; updateSlide(); buildDots(); }
+  function goPrev(){ active=active<=0?getMax():active-1; progress=0; updateSlide(); buildDots(); }
+
+  document.getElementById('newsNext').addEventListener('click',()=>{ goNext(); resetAuto(); });
+  document.getElementById('newsPrev').addEventListener('click',()=>{ goPrev(); resetAuto(); });
+
+  wrap.addEventListener('mouseenter',()=>{ paused=true; pauseLabel.classList.add('show'); });
+  wrap.addEventListener('mouseleave',()=>{ paused=false; pauseLabel.classList.remove('show'); resetAuto(); });
+
+  document.addEventListener('keydown',(e)=>{
+    const s=document.getElementById('noticias');
+    if(!s) return;
+    const r=s.getBoundingClientRect();
+    if(r.top>window.innerHeight||r.bottom<0) return;
+    if(e.key==='ArrowLeft'){ goPrev(); resetAuto(); }
+    if(e.key==='ArrowRight'){ goNext(); resetAuto(); }
+  });
+
+  let autoTimer=null, progTimer=null, progress=0;
+  function resetAuto(){
+    clearTimeout(autoTimer); clearInterval(progTimer);
+    progress=0; prog.style.width='0%';
+    if(!paused) startAuto();
+  }
+  function startAuto(){
+    const DUR=5000, STEP=40;
+    let elapsed=0;
+    progTimer=setInterval(()=>{
+      elapsed+=STEP; progress=Math.min((elapsed/DUR)*100,100);
+      prog.style.width=progress+'%';
+    },STEP);
+    autoTimer=setTimeout(()=>{ goNext(); resetAuto(); },DUR);
+  }
+
+  buildDots();
+  updateSlide();
+  startAuto();
+})();
 
 /* ── INICIALIZAR ────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
