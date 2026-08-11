@@ -1790,6 +1790,204 @@ section { scroll-margin-top: 80px; }
   .cv-traj-yr{ font-size:10px; }
   .cv-traj-lv{ font-size:11px; }
 }
+
+/* ── SERVICIOS EXPORTABLES (panel export) ── */
+.sx-hero{
+  background:linear-gradient(135deg, var(--azul-noche) 0%, #153A5E 60%, #1B4A72 100%);
+  color:#fff; padding:44px 40px 40px; border-radius:16px 16px 0 0;
+  position:relative; overflow:hidden;
+}
+.sx-hero::before{
+  content:''; position:absolute; top:-120px; right:-120px;
+  width:400px; height:400px; border-radius:50%;
+  background:rgba(42,141,200,.08);
+}
+.sx-hero::after{
+  content:''; position:absolute; bottom:-80px; left:-60px;
+  width:300px; height:300px; border-radius:50%;
+  background:rgba(122,182,72,.06);
+}
+.sx-hero-inner{ position:relative; z-index:1; }
+.sx-hero-eye{
+  font-family:var(--mono,'IBM Plex Mono',monospace);
+  font-size:.75rem; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--verde-corp); margin-bottom:14px; font-weight:600;
+}
+.sx-hero h3{
+  font-family:var(--serif); font-size:clamp(1.6rem,3vw,2.4rem);
+  font-weight:600; line-height:1.15; color:#fff;
+  margin-bottom:16px; max-width:720px; letter-spacing:-.01em;
+}
+.sx-hero-desc{
+  font-size:1rem; font-weight:300; line-height:1.65;
+  max-width:640px; color:rgba(255,255,255,.88);
+}
+
+.sx-kpi-bar{
+  background:#fff; border:1px solid var(--gris-linea); border-top:none;
+  border-radius:0 0 16px 16px;
+  display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+  margin-bottom:36px;
+}
+.sx-kpi{
+  padding:22px 20px; text-align:center;
+  border-right:1px solid var(--gris-linea);
+}
+.sx-kpi:last-child{ border-right:none; }
+.sx-kpi-val{
+  font-family:var(--mono,monospace); font-size:1.7rem; font-weight:600;
+  color:var(--azul-corp); line-height:1; margin-bottom:6px;
+}
+.sx-kpi-val .u{ font-size:.85rem; font-weight:400; color:var(--gris-medio); }
+.sx-kpi-lbl{ font-size:.78rem; color:var(--gris-texto); line-height:1.35; }
+.sx-kpi-src{
+  font-family:var(--mono,monospace); font-size:.62rem;
+  color:#9AABB8; margin-top:4px;
+}
+
+.sx-block{ margin-bottom:36px; }
+.sx-block-eye{
+  font-family:var(--mono,monospace); font-size:.7rem;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--azul-corp); font-weight:600; margin-bottom:8px;
+}
+.sx-block h4{
+  font-family:var(--serif); font-size:1.7rem; font-weight:600;
+  color:var(--azul-noche); margin-bottom:12px; line-height:1.2;
+}
+.sx-block-intro{
+  font-size:.98rem; line-height:1.7; color:var(--gris-texto);
+  max-width:740px; margin-bottom:22px;
+}
+
+.sx-programa{
+  background:var(--azul-suave); border-left:4px solid var(--azul-corp);
+  border-radius:0 10px 10px 0; padding:22px 26px;
+}
+.sx-programa h5{
+  font-family:'Jost',var(--sans); font-size:1.05rem; font-weight:600;
+  color:var(--azul-noche); margin-bottom:10px;
+}
+.sx-programa p{ font-size:.92rem; line-height:1.65; color:var(--gris-texto); }
+.sx-prog-logos{
+  display:flex; gap:12px; align-items:center; margin-top:16px; flex-wrap:wrap;
+}
+.sx-prog-logos span{
+  font-family:var(--mono,monospace); font-size:.72rem; font-weight:600;
+  letter-spacing:.04em; color:var(--azul-noche);
+  background:#fff; padding:6px 14px; border-radius:6px;
+  border:1px solid var(--gris-linea);
+}
+
+.sx-mercados{
+  background:var(--gris-fondo); border:1px solid var(--gris-linea);
+  border-radius:12px; padding:32px 30px;
+}
+.sx-mercados-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:44px; align-items:start;
+}
+.sx-chart-title{
+  font-size:.78rem; color:var(--gris-texto); margin-bottom:10px;
+  font-family:var(--mono,monospace);
+}
+.sx-bar-row{
+  display:grid; grid-template-columns:110px 1fr 60px;
+  align-items:center; gap:12px; margin-bottom:10px;
+}
+.sx-bar-row .pais{ font-size:.85rem; color:var(--azul-noche); text-align:right; }
+.sx-bar-track{
+  height:22px; background:#fff; border-radius:4px; overflow:hidden;
+  border:1px solid var(--gris-linea);
+}
+.sx-bar-fill{
+  height:100%; background:linear-gradient(90deg,var(--azul-corp),#3BA0DA);
+}
+.sx-bar-fill.verde{ background:linear-gradient(90deg,var(--verde-corp),#8EC95A); }
+.sx-bar-row .pct{
+  font-family:var(--mono,monospace); font-size:.82rem; font-weight:600;
+  color:var(--azul-noche);
+}
+.sx-chart-src{
+  font-family:var(--mono,monospace); font-size:.62rem;
+  color:#9AABB8; margin-top:8px;
+}
+.sx-narr h5{
+  font-family:var(--serif); font-size:1.3rem; font-weight:600;
+  color:var(--azul-noche); margin-bottom:12px;
+}
+.sx-narr p{
+  font-size:.92rem; line-height:1.7; color:var(--gris-texto);
+  margin-bottom:12px;
+}
+.sx-dato{
+  display:inline-flex; align-items:baseline; gap:8px;
+  background:var(--verde-suave); padding:10px 18px; border-radius:8px;
+  margin-top:6px;
+}
+.sx-dato .v{
+  font-family:var(--mono,monospace); font-size:1.1rem; font-weight:700;
+  color:var(--verde-prof);
+}
+.sx-dato .d{ font-size:.82rem; color:var(--azul-noche); }
+
+.sx-cluster-grid{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:16px;
+}
+.sx-cluster{
+  background:#fff; border:1px solid var(--gris-linea); border-radius:12px;
+  padding:24px 22px; transition:all .25s ease;
+}
+.sx-cluster:hover{
+  border-color:var(--azul-corp);
+  box-shadow:0 6px 22px rgba(14,42,74,.08);
+  transform:translateY(-2px);
+}
+.sx-cl-ico{
+  width:38px; height:38px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.15rem; margin-bottom:14px;
+}
+.sx-cl-ico.tech{ background:#E8F2FA; }
+.sx-cl-ico.eng { background:#FFF3E6; }
+.sx-cl-ico.env { background:#EDF6E5; }
+.sx-cl-ico.cons{ background:#F0EAFA; }
+.sx-cl-ico.ind { background:#FDE8E8; }
+.sx-cluster h5{
+  font-family:'Jost',var(--sans); font-size:.98rem; font-weight:600;
+  color:var(--azul-noche); margin-bottom:4px; line-height:1.25;
+}
+.sx-cluster .sx-count{
+  font-family:var(--mono,monospace); font-size:.7rem; font-weight:600;
+  color:var(--azul-corp); margin-bottom:12px; letter-spacing:.04em;
+}
+.sx-emp-list{ list-style:none; display:flex; flex-wrap:wrap; gap:6px; padding:0; margin:0; }
+.sx-emp-list li{
+  font-size:.78rem; color:var(--gris-texto); background:var(--gris-fondo);
+  padding:4px 10px; border-radius:4px; line-height:1.3;
+}
+
+.sx-source{
+  margin-top:28px; padding:18px 24px;
+  background:var(--gris-fondo); border-radius:10px;
+  border:1px solid var(--gris-linea); text-align:center;
+}
+.sx-source p{
+  font-family:var(--mono,monospace); font-size:.68rem;
+  color:#9AABB8; line-height:1.6;
+}
+.sx-source a{ color:var(--azul-corp); text-decoration:none; }
+.sx-source a:hover{ text-decoration:underline; }
+
+@media (max-width:900px){
+  .sx-kpi-bar{ grid-template-columns:repeat(2,1fr); }
+  .sx-kpi:nth-child(2){ border-right:none; }
+  .sx-kpi:nth-child(1),.sx-kpi:nth-child(2){ border-bottom:1px solid var(--gris-linea); }
+  .sx-mercados-grid{ grid-template-columns:1fr; gap:32px; }
+  .sx-hero{ padding:36px 24px 32px; }
+  .sx-mercados{ padding:24px 20px; }
+  .sx-bar-row{ grid-template-columns:80px 1fr 50px; }
+}
 </style>
 </head>
 <body>
@@ -2609,6 +2807,7 @@ section { scroll-margin-top: 80px; }
     <!-- TABS -->
     <div class="export-tabs fade-up">
       <button class="export-tab active"   onclick="switchTab('canasta')">📊 Canasta exportadora</button>
+      <button class="export-tab"          onclick="switchTab('servicios')">💼 Servicios exportables</button>
       <button class="export-tab"          onclick="switchTab('oportunidades')">🚀 Oportunidades emergentes</button>
       <button class="export-tab"          onclick="switchTab('infraestructura')">🚢 Infraestructura exportadora</button>
       <button class="export-tab"          onclick="switchTab('prochile')">🤝 Articulación ProChile</button>
@@ -2683,6 +2882,179 @@ section { scroll-margin-top: 80px; }
         <div class="top15-row"><div class="top15-name"><span class="top15-rank">15</span>Ventanas, puertas y marcos</div><div class="top15-num t-right">63,9</div><div class="top15-num t-right">54,2</div><div class="top15-var var-neg t-right">▼ −15,2%</div></div>
       </div>
       <p class="top15-note">Fuente: Principales Productos Exportados Top 15 — SUBREI 2025 · años 2024 y 2025 en US$ millones FOB · Fuente base: Aduana de Chile. Filas destacadas en verde = productos con crecimiento 2024→2025.</p>
+    </div>
+
+    <!-- ─── PANEL SERVICIOS EXPORTABLES ─── -->
+    <div class="export-panel" id="panel-servicios">
+
+      <div class="sx-hero">
+        <div class="sx-hero-inner">
+          <p class="sx-hero-eye">Expo Biobío · Servicios Exportables</p>
+          <h3>25 empresas de servicios proyectan su salto internacional desde el Biobío</h3>
+          <p class="sx-hero-desc">
+            Un ecosistema regional de servicios basados en conocimiento —ingeniería, tecnología, medio ambiente y consultoría— avanza hacia mercados latinoamericanos con el respaldo de Corfo y ProChile.
+          </p>
+        </div>
+      </div>
+
+      <div class="sx-kpi-bar">
+        <div class="sx-kpi">
+          <div class="sx-kpi-val">25</div>
+          <div class="sx-kpi-lbl">Empresas en programa de internacionalización</div>
+          <div class="sx-kpi-src">ProChile Biobío · Ene 2026</div>
+        </div>
+        <div class="sx-kpi">
+          <div class="sx-kpi-val">18,7 <span class="u">MM USD</span></div>
+          <div class="sx-kpi-lbl">Exportaciones de servicios regionales (ene–sep 2025)</div>
+          <div class="sx-kpi-src">Servicio Nacional de Aduanas</div>
+        </div>
+        <div class="sx-kpi">
+          <div class="sx-kpi-val">+136%</div>
+          <div class="sx-kpi-lbl">Crecimiento interanual exportación de servicios</div>
+          <div class="sx-kpi-src">Aduanas · 2024 → 2025</div>
+        </div>
+        <div class="sx-kpi">
+          <div class="sx-kpi-val">5</div>
+          <div class="sx-kpi-lbl">Clústeres sectoriales en proceso</div>
+          <div class="sx-kpi-src">Programa Red Mercado 2026</div>
+        </div>
+      </div>
+
+      <div class="sx-block">
+        <div class="sx-block-eye">Articulación institucional</div>
+        <h4>Programa Red Mercado</h4>
+        <p class="sx-block-intro">
+          Estrategia de internacionalización ejecutada en el marco de una alianza entre el Comité Corfo Biobío, ProChile Biobío y la consultora Gestiona, con Coopeval Desarrolla como agente operador. El programa acompaña a empresas regionales de servicios en diagnóstico de brechas, asesorías técnicas, mentorías y giras comerciales hacia América Latina.
+        </p>
+        <div class="sx-programa">
+          <h5>Enfoque del programa</h5>
+          <p>
+            Las empresas participan en un proceso que incluye diagnóstico de capacidades y brechas, asesorías técnicas especializadas, talleres de preparación exportadora, mentorías individuales y giras comerciales con ruedas de negocios en mercados objetivo. La meta es consolidar una red empresarial asociativa que posicione al Biobío como proveedor estratégico de soluciones avanzadas para la región.
+          </p>
+          <div class="sx-prog-logos">
+            <span>Comité Corfo Biobío</span>
+            <span>ProChile Biobío</span>
+            <span>Gestiona</span>
+            <span>Coopeval Desarrolla</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sx-block">
+        <div class="sx-block-eye">Mercados de destino</div>
+        <h4>Destinos de la exportación de servicios</h4>
+        <p class="sx-block-intro">
+          La oferta de servicios del Biobío se dirige principalmente a economías de América Latina, con presencia creciente en América del Norte y Europa.
+        </p>
+        <div class="sx-mercados">
+          <div class="sx-mercados-grid">
+            <div>
+              <p class="sx-chart-title">Participación por país de destino · Biobío · ene–sep 2025</p>
+              <div class="sx-bar-row">
+                <span class="pais">EE.UU.</span>
+                <div class="sx-bar-track"><div class="sx-bar-fill" style="width:38.1%"></div></div>
+                <span class="pct">38,1%</span>
+              </div>
+              <div class="sx-bar-row">
+                <span class="pais">España</span>
+                <div class="sx-bar-track"><div class="sx-bar-fill" style="width:16%"></div></div>
+                <span class="pct">16,0%</span>
+              </div>
+              <div class="sx-bar-row">
+                <span class="pais">Argentina</span>
+                <div class="sx-bar-track"><div class="sx-bar-fill verde" style="width:14%"></div></div>
+                <span class="pct">14,0%</span>
+              </div>
+              <div class="sx-bar-row">
+                <span class="pais">Perú</span>
+                <div class="sx-bar-track"><div class="sx-bar-fill verde" style="width:13.5%"></div></div>
+                <span class="pct">13,5%</span>
+              </div>
+              <div class="sx-bar-row">
+                <span class="pais">Canadá</span>
+                <div class="sx-bar-track"><div class="sx-bar-fill" style="width:12.3%"></div></div>
+                <span class="pct">12,3%</span>
+              </div>
+              <div class="sx-bar-row">
+                <span class="pais">Taiwán</span>
+                <div class="sx-bar-track"><div class="sx-bar-fill" style="width:6.1%"></div></div>
+                <span class="pct">6,1%</span>
+              </div>
+              <p class="sx-chart-src">Fuente: Servicio Nacional de Aduanas</p>
+            </div>
+            <div class="sx-narr">
+              <h5>Mercados prioritarios del programa</h5>
+              <p>El Programa Red Mercado 2026 focaliza sus acciones en cuatro mercados latinoamericanos: <strong>Perú, Colombia, Argentina y Uruguay</strong>, alineados con la demanda regional por servicios de ingeniería, tecnología ambiental y consultoría especializada.</p>
+              <p>A nivel nacional, las exportaciones de servicios de Chile alcanzaron un récord histórico, con los principales flujos dirigidos a Estados Unidos, Perú, Colombia, Reino Unido y Suiza.</p>
+              <div class="sx-dato">
+                <span class="v">US$ 3.132 MM</span>
+                <span class="d">Récord nacional de exportación de servicios (2025)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sx-block">
+        <div class="sx-block-eye">Empresas participantes</div>
+        <h4>Oferta de servicios por clúster</h4>
+        <p class="sx-block-intro">
+          Las 25 empresas se agrupan en cinco clústeres que reflejan la diversidad y sofisticación de la oferta exportable de servicios del Biobío.
+        </p>
+        <div class="sx-cluster-grid">
+          <div class="sx-cluster">
+            <div class="sx-cl-ico tech">💻</div>
+            <h5>Tecnología y Soluciones Digitales</h5>
+            <div class="sx-count">3 empresas</div>
+            <ul class="sx-emp-list">
+              <li>Improve</li><li>Hibring</li><li>Lemusse</li>
+            </ul>
+          </div>
+          <div class="sx-cluster">
+            <div class="sx-cl-ico eng">⚙️</div>
+            <h5>Ingeniería Industrial y Productiva</h5>
+            <div class="sx-count">6 empresas</div>
+            <ul class="sx-emp-list">
+              <li>Ramtun</li><li>Ingero</li><li>DYG Ingeniería</li>
+              <li>Ingemecanic</li><li>Vector Ingenieros</li><li>Servicios CAD Ingenieros</li>
+            </ul>
+          </div>
+          <div class="sx-cluster">
+            <div class="sx-cl-ico env">🌿</div>
+            <h5>Medio Ambiente y Sostenibilidad</h5>
+            <div class="sx-count">5 empresas</div>
+            <ul class="sx-emp-list">
+              <li>Ecogen</li><li>Envirowelt</li><li>Aquarod Solutions</li>
+              <li>Prosein</li><li>Ecotrans AGT</li>
+            </ul>
+          </div>
+          <div class="sx-cluster">
+            <div class="sx-cl-ico cons">📐</div>
+            <h5>Consultoría e Infraestructura</h5>
+            <div class="sx-count">3 empresas</div>
+            <ul class="sx-emp-list">
+              <li>Solutiva Consultores</li><li>SICC Ingeniería</li><li>Atia Consultores</li>
+            </ul>
+          </div>
+          <div class="sx-cluster">
+            <div class="sx-cl-ico ind">🔬</div>
+            <h5>Servicios Industriales Aplicados</h5>
+            <div class="sx-count">3 empresas</div>
+            <ul class="sx-emp-list">
+              <li>Termografía Chile</li><li>Tecnograbados</li><li>VOGU</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="sx-source">
+        <p>
+          Fuentes: <a href="https://www.prochile.gob.cl/noticias/detalle-noticia/2026/01/09/un-grupo-de-25-empresas-del-sector-servicios-del-biob%C3%ADo-proyectan-su-salto-internacional-para-el-a%C3%B1o-2026" target="_blank" rel="noopener">ProChile Biobío, enero 2026</a> ·
+          Servicio Nacional de Aduanas ·
+          Estrategia de Internacionalización del Biobío (Deloitte / CDBB, abril 2026)
+        </p>
+      </div>
+
     </div>
 
     <!-- ─── PANEL 2: OPORTUNIDADES ─── -->
@@ -3714,7 +4086,7 @@ section { scroll-margin-top: 80px; }
 </button>
 
 <script>
-const TABS = ['canasta', 'oportunidades', 'infraestructura', 'prochile'];
+const TABS = ['canasta', 'servicios', 'oportunidades', 'infraestructura', 'prochile'];
 function switchTab(tab) {
   document.querySelectorAll('.export-tab').forEach((t, i) =>
     t.classList.toggle('active', TABS[i] === tab)
