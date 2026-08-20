@@ -275,6 +275,53 @@ section { scroll-margin-top: 80px; }
 .section-pilares p{ color:var(--gris-texto); font-weight:300; line-height:1.7; font-size:1rem; }
 @media (max-width:960px){ .section-pilares{ padding:80px 24px 40px; } }
 
+/* VIDEO REGIONAL BAJO EL HERO */
+.hero-video-section{
+  background:var(--azul-noche);
+  padding:80px 48px;
+}
+.hero-video-inner{
+  max-width:1120px; margin:0 auto;
+}
+.hero-video-head{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:24px; margin-bottom:28px; flex-wrap:wrap;
+}
+.hero-video-eye{
+  font-family:var(--mono,'IBM Plex Mono',monospace); font-size:.72rem;
+  letter-spacing:.28em; text-transform:uppercase; color:var(--verde-corp);
+  margin-bottom:12px; display:inline-flex; align-items:center; gap:14px; font-weight:600;
+}
+.hero-video-eye::before{ content:''; width:44px; height:1px; background:var(--verde-corp); }
+.hero-video-title{
+  font-family:var(--display,var(--serif)); font-size:clamp(1.7rem,3vw,2.4rem);
+  font-weight:500; color:#fff; line-height:1.15; letter-spacing:-.01em;
+}
+.hero-video-title em{ font-style:italic; color:var(--verde-corp); font-weight:600; }
+.hero-video-credit{
+  font-family:var(--mono,monospace); font-size:.68rem; letter-spacing:.14em;
+  text-transform:uppercase; color:rgba(255,255,255,.55);
+  display:inline-flex; align-items:center; gap:10px; white-space:nowrap;
+}
+.hero-video-credit::before{ content:''; width:22px; height:1px; background:var(--verde-corp); }
+.hero-video-frame{
+  position:relative; border-radius:14px; overflow:hidden;
+  background:#000; border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
+}
+.hero-video-frame::after{
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--azul-corp),var(--verde-corp));
+  z-index:2; pointer-events:none;
+}
+.hero-video-frame video{
+  display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#000;
+}
+@media (max-width:768px){
+  .hero-video-section{ padding:56px 20px; }
+  .hero-video-frame{ border-radius:10px; }
+}
+
 /* Sección pilares landing (primera página) */
 #pilares{
   max-width:1200px; margin:0 auto; padding:110px 48px 80px;
@@ -2043,6 +2090,21 @@ section { scroll-margin-top: 80px; }
   <span class="hero-credit">Gran Concepción · Río Biobío</span>
 </header>
 
+<!-- VIDEO REGIONAL -->
+<section class="hero-video-section">
+  <div class="hero-video-inner">
+    <div class="hero-video-head">
+      <div>
+        <div class="hero-video-eye">Región del Biobío</div>
+        <h2 class="hero-video-title">Conoce la <em>Región del Biobío</em></h2>
+      </div>
+      <span class="hero-video-credit">Video · ProChile</span>
+    </div>
+    <div class="hero-video-frame">
+      <video src="video-region-biobio.mp4" controls preload="metadata" playsinline aria-label="Video promocional de la Región del Biobío, realizado por ProChile"></video>
+    </div>
+  </div>
+</section>
 
 <section id="pilares">
   <div class="section-head">
@@ -2083,7 +2145,7 @@ section { scroll-margin-top: 80px; }
     <div>
       <span class="eyebrow">Gobernanza</span>
       <h2>Articulación institucional, <em>no duplicación</em>.</h2>
-      <p>Corporación Desarrolla Biobío actúa como articulador y validador del ecosistema regional. Los datos sectoriales provienen de gremios e instituciones oficiales, y la plataforma se despliega en el marco de la Estrategia Regional de Desarrollo 2050 y la Estrategia de Internacionalización del Biobío.</p>
+      <p>Corporación Desarrolla Biobío actúa como articulador y validador del ecosistema regional. Los datos sectoriales provienen de gremios e instituciones oficiales, y la plataforma se despliega en el marco de la Estrategia de Internacionalización del Biobío.</p>
     </div>
     <ul class="alianza-list">
       <li><span class="dot"></span><div><b>Gobierno Regional del Biobío</b><span>Marco estratégico ERD 2050 y respaldo institucional del despliegue.</span></div></li>
