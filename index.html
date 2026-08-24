@@ -6,12 +6,6 @@
 <title>Plataforma Biobío · Biobío Invest · Biobío Export</title>
 <meta name="description" content="Plataforma oficial de promoción de inversiones y exportaciones de la Región del Biobío. Operada por Corporación Desarrolla Biobío.">
 <link rel="icon" type="image/png" href="DBB Color.png">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Plataforma Biobío">
-<meta name="theme-color" content="#1A4D7A">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4882,17 +4876,17 @@ function pqAbrirPerfil(nombre) {
 /* ── CARRUSEL NOTICIAS ──────────────────────────────────── */
 (function(){
   const NEWS = [
+    {date:"21 Ago 2026",excerpt:"La Estrategia Biobío 2050, iniciativa liderada por Desarrolla Biobío, tuvo un papel destacado en IMPULSA 2026 como hoja de ruta para el desarrollo regional.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/08/1d66739d-f8d2-49e9-a0fb-941fcd5123d7-1024x768.jpg",url:"https://desarrollabiobio.cl/estrategia-biobio-2050-destaca-en-impulsa-2026-como-hoja-de-ruta-para-el-desarrollo-regional/",tag:"Biobío 2050"},
+    {date:"12 Ago 2026",excerpt:"Desarrolla Biobío presentó la Estrategia Biobío 2050 en el lanzamiento de la Agenda para el Futuro de la Construcción del Gran Concepción, junto a CChC Biobío.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/08/1786564204355-1-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-presento-la-estrategia-biobio-2050-en-lanzamiento-de-agenda-para-el-futuro-de-la-construccion-del-gran-concepcion/",tag:"Biobío 2050"},
+    {date:"07 Ago 2026",excerpt:"Desarrolla Biobío realizó su Asamblea General Ordinaria de Socios y eligió a los cinco representantes que integrarán su directorio.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/08/e37748bc-258e-42ce-b610-6c4ec11e5bbf-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-eligio-a-los-cinco-representantes-de-sus-socios-en-el-directorio/",tag:"Institucional"},
+    {date:"07 Ago 2026",excerpt:"Desarrolla Biobío presenta a los gremios productivos su plataforma de internacionalización para fortalecer el posicionamiento global de la región.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/08/7e55f7dc-f03f-44f5-b85d-5de63d1d8c9e-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-presenta-a-los-gremios-productivos-su-plataforma-de-internacionalizacion-para-fortalecer-el-posicionamiento-global-de-la-region/",tag:"Internacionalización"},
     {date:"28 Jul 2026",excerpt:"La Estrategia Biobío 2050 continúa avanzando en su proceso de construcción participativa. Representantes del sector logístico dieron inicio a la tercera ronda de trabajo para consolidar su hoja de ruta.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/f367495c-ebc6-4c11-8ed5-d360a290c033-1024x768.jpg",url:"https://desarrollabiobio.cl/estrategia-biobio-2050-inicia-tercera-ronda-de-trabajo-con-el-sector-logistico-para-consolidar-su-hoja-de-ruta/",tag:"Biobío 2050"},
     {date:"28 Jul 2026",excerpt:"Macarena Vera, gerente general de Desarrolla Biobío, participó en la presentación del plan «Juntos Reactivamos Biobío», iniciativa que busca generar 3 mil nuevos empleos en la región.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/1784731132471-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-participa-en-presentacion-del-plan-juntos-reactivamos-biobio-busca-generar-3-mil-nuevos-empleos/",tag:"Reactivación"},
     {date:"13 Jul 2026",excerpt:"Desarrolla Biobío participó en el Summit Chile Impacta, instancia que reunió en Concepción a líderes industriales para construir una agenda común de desarrollo regional.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/fd590905-efca-496e-9baa-557917e2c6f6-1024x768.jpg",url:"https://desarrollabiobio.cl/chile-impacta-reunio-a-lideres-industriales-del-biobio-para-construir-una-agenda-comun-de-desarrollo/",tag:"Industria"},
     {date:"09 Jul 2026",excerpt:"Desarrolla Biobío dio inicio a la segunda fase de la Estrategia Biobío 2050, un proceso colaborativo para consolidar los ejes de cada pilar de desarrollo regional.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/0007062b-1294-4095-9b7b-a2bb4677b14e-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-inicia-la-segunda-fase-de-la-estrategia-biobio-2050-para-consolidar-ejes-de-cada-pilar/",tag:"Biobío 2050"},
-    {date:"09 Jul 2026",excerpt:"Desarrolla Biobío fortalece vínculos con Indonesia para impulsar nuevas oportunidades de cooperación e inversión en la Región del Biobío.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/fbcccf61-acff-46d0-a47a-3c0de7a2a2c0-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-fortalece-vinculos-con-indonesia-para-impulsar-nuevas-oportunidades-de-cooperacion-e-inversion/",tag:"Internacional"},
-    {date:"06 Jul 2026",excerpt:"Desarrolla Biobío impulsó la elaboración de una Estrategia Regional de Internacionalización para fortalecer la posición competitiva de la región a nivel global.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/1782229398419-1.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-impulsa-estrategia-regional-de-internacionalizacion-para-competir-a-nivel-global/",tag:"Internacionalización"},
-    {date:"02 Jul 2026",excerpt:"Desarrolla Biobío participó de EREDE 2026, encuentro empresarial que reunió a autoridades y representantes del ecosistema industrial para atraer inversión extranjera.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/bad3668a-0d0b-4c38-a93d-8cbd2bd3a593-e1783021433135-1024x471.jpg",url:"https://desarrollabiobio.cl/erede-2026-expresidente-frei-se-convierte-en-socio-estrategico-del-biobio-para-atraer-inversion-extranjera/",tag:"Inversión"},
-    {date:"01 Jul 2026",excerpt:"Actores clave planifican el desarrollo de las ciudades del Biobío de cara al 2050. El potencial de la región es reconocido en todo Chile.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/IMG_4736-1024x768.jpg",url:"https://desarrollabiobio.cl/actores-planifican-desarrollo-de-las-ciudades-del-biobio-de-cara-al-2050-el-potencial-de-la-region-es-reconocido-en-todo-chile/",tag:"Ciudades"},
-    {date:"28 Jun 2026",excerpt:"Una delegación de la Secretaría de Estado de Educación, Investigación e Innovación Suiza (SERI) visitó la Región del Biobío para explorar oportunidades de inversión y colaboración tecnológica.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/06/7d252b71-f7b4-4f40-bea7-1f9b4388cd90-1024x768.jpg",url:"https://desarrollabiobio.cl/delegacion-suiza-explora-oportunidades-de-inversion-y-colaboracion-tecnologica-en-la-region-del-biobio/",tag:"Internacional"}
+    {date:"09 Jul 2026",excerpt:"Desarrolla Biobío fortalece vínculos con Indonesia para impulsar nuevas oportunidades de cooperación e inversión en la Región del Biobío.",img:"https://desarrollabiobio.cl/wp-content/uploads/2026/07/fbcccf61-acff-46d0-a47a-3c0de7a2a2c0-1024x768.jpg",url:"https://desarrollabiobio.cl/desarrolla-biobio-fortalece-vinculos-con-indonesia-para-impulsar-nuevas-oportunidades-de-cooperacion-e-inversion/",tag:"Internacional"}
   ];
-  const TAG_COLORS={"Biobío 2050":"#2A8DC8","Reactivación":"#E8853D","Industria":"#5B6ABF","Internacional":"#7AB648","Internacionalización":"#7AB648","Inversión":"#D4A843","Ciudades":"#C75B8E"};
+  const TAG_COLORS={"Biobío 2050":"#2A8DC8","Reactivación":"#E8853D","Industria":"#5B6ABF","Internacional":"#7AB648","Internacionalización":"#7AB648","Inversión":"#D4A843","Ciudades":"#C75B8E","Institucional":"#1A4D7A"};
 
   const track=document.getElementById('newsTrack');
   const dotsWrap=document.getElementById('newsDots');
@@ -5012,15 +5006,6 @@ document.addEventListener('DOMContentLoaded', () => {
   pqBuildWheel();
   pqRenderComunas();
 });
-</script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js")
-      .then(reg => console.log("SW registrado:", reg.scope))
-      .catch(err => console.log("SW error:", err));
-  });
-}
 </script>
 </body>
 </html>
